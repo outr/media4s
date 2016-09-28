@@ -54,7 +54,7 @@ object ImageUtil extends Logging {
    * Validate a Vector
    *
    * Since it is possible to have a valid Vector with some limitations that a
-   * user may need to know, the [[Success]] returned will carry such warnings if
+   * user may need to know, the Success returned will carry such warnings if
    * applicable and available.
    */
   def validateVector(file: File): Try[List[String]] =

@@ -29,19 +29,21 @@ libraryDependencies += "com.outr.scribe" %% "scribe" % "1.2.5"
 
 libraryDependencies += "org.im4java" % "im4java" % "1.4.0"
 
-libraryDependencies += "org.apache.xmlgraphics" % "batik-transcoder" % "1.8"
+libraryDependencies += "org.apache.xmlgraphics" % "batik-transcoder" % "1.7"
 
-libraryDependencies += "org.apache.xmlgraphics" % "batik-util" % "1.8"
+libraryDependencies += "org.apache.xmlgraphics" % "batik-util" % "1.7"
 
-libraryDependencies += "org.apache.xmlgraphics" % "batik-ext" % "1.8"
+libraryDependencies += "org.apache.xmlgraphics" % "batik-ext" % "1.7"
 
-libraryDependencies += "org.apache.xmlgraphics" % "batik-bridge" % "1.8"
+libraryDependencies += "org.apache.xmlgraphics" % "batik-bridge" % "1.7"
 
-libraryDependencies += "org.apache.xmlgraphics" % "batik-dom" % "1.8"
+libraryDependencies += "org.apache.xmlgraphics" % "batik-dom" % "1.7"
 
-libraryDependencies += "org.apache.xmlgraphics" % "batik-codec" % "1.8"
+libraryDependencies += "org.apache.xmlgraphics" % "batik-codec" % "1.7"
 
-libraryDependencies += "org.apache.xmlgraphics" % "batik-xml" % "1.8"
+libraryDependencies += "org.apache.xmlgraphics" % "batik-xml" % "1.7"
+
+//libraryDependencies += "org.apache.xmlgraphics" % "xmlgraphics-commons" % "2.1"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
 
