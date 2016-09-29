@@ -6,6 +6,8 @@ version := "1.0.1-SNAPSHOT"
 
 scalaVersion := "2.11.8"
 
+fork := true
+
 scalacOptions ++= Seq(
     "-deprecation",
     "-encoding", "UTF-8",
@@ -44,6 +46,8 @@ libraryDependencies += "org.apache.xmlgraphics" % "batik-codec" % "1.7"
 libraryDependencies += "org.apache.xmlgraphics" % "batik-xml" % "1.7"
 
 //libraryDependencies += "org.apache.xmlgraphics" % "xmlgraphics-commons" % "2.1"
+
+libraryDependencies += "com.propensive" %% "rapture-json-jackson" % "2.0.0-M7"
 
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.0" % "test"
 

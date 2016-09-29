@@ -1,9 +1,11 @@
 package org.matthicks.media4s.video.info
 
-import org.matthicks.media4s.video.MetaData
-
-case class VideoInfo(codec: String = null, width: Int = 0, height: Int = 0, fps: Double = 0.0, meta: MetaData = MetaData()) {
+case class VideoInfo(codec: String,
+                     width: Int,
+                     height: Int,
+                     fps: Double,
+                     tags: Tags) {
   override def toString = {
-    s"VideoInfo(codec: $codec, width: $width, height: $height, fps: $fps, meta: $meta)"
+    s"VideoInfo(codec: $codec, width: $width, height: $height, fps: $fps, tags: $tags)"
   }
 }

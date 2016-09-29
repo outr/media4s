@@ -1,9 +1,7 @@
 package org.matthicks.media4s.video.info
 
-import org.matthicks.media4s.video.MetaData
-
-case class AudioInfo(codec: String = null, range: Long = 0L, stereo: Boolean = false, meta: MetaData = MetaData()) {
+case class AudioInfo(codec: String = null, bitRate: Long = 0L, channels: Int, channelLayout: String, tags: Tags) {
   override def toString = {
-    s"AudioInfo(codec: $codec, range: $range, stereo: $stereo, meta: $meta)"
+    s"AudioInfo(codec: $codec, bitRate: $bitRate, channels: $channels, channelsLayout: $channelLayout, tags: $tags)"
   }
 }

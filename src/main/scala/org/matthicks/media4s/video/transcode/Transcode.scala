@@ -13,9 +13,11 @@ import scala.collection.mutable.ListBuffer
 import scala.sys.process._
 
 /**
- * @param inputDelay  Delays the input file's video streams by [[inputDelay]] seconds
- * @param start  Advances the input file's video streams by [[start]] seconds
- */
+  * Transcode instances can be executed to, that's right, transcode audio or video!
+  *
+  * @param inputDelay  Delays the input file's video streams by [[inputDelay]] seconds
+  * @param start  Advances the input file's video streams by [[start]] seconds
+  */
 case class Transcode(input: File,
                      output: File,
                      inputDelay: Double = 0.0,
@@ -116,7 +118,7 @@ case class Transcode(input: File,
     command.toSeq
   }
 
-  def execute(monitor: TranscodeProgress => Unit = null) = {
+  def execute(monitor: Option[TranscodeListener] = None): Unit = {
     logger.debug(command.mkString(" "))
     val start = System.currentTimeMillis()
     var lastLine: String = null
@@ -126,13 +128,11 @@ case class Transcode(input: File,
         val time = hours.toDouble.hours + minutes.toDouble.minutes + seconds.toDouble.seconds + (millis.toDouble / 100.0)
         val elapsed = Time.fromMillis(System.currentTimeMillis() - start)
         val finished = last == "L"
-        val p = TranscodeProgress(percentage, frame.toInt, fps.toDouble, q.toDouble, math.round(size.toDouble * 1000), time, math.round(bitRate.toDouble * 1000), elapsed, finished)
-        if (monitor != null) {
-          monitor(p)
-        }
+        monitor.foreach(_.progress(percentage, frame.toInt, fps.toDouble, q.toDouble, math.round(size.toDouble * 1000), time, math.round(bitRate.toDouble * 1000), elapsed, finished))
       }
       case _ => {
         logger.debug(line)
+        monitor.foreach(_.log(line))
         lastLine = line
       }
     }

@@ -10,91 +10,64 @@ import org.matthicks.media4s.video.info.{AudioInfo, MediaInfo, VideoInfo}
 import org.matthicks.media4s.video.transcode.Transcode
 import org.powerscala.concurrent.Time._
 
+import scala.io.Source
 import scala.sys.process._
 
 /**
  * @author Matt Hicks <matt@outr.com>
  */
 object VideoUtil extends Logging {
-  private val CreationTime = """creation_time\s*:\s*(.+)""".r
-  private val DurationStartAndBitrate = """Duration: ([0-9]{2}):([0-9]{2}):([0-9]{2}).([0-9]{2}), start: ([0-9.]+), bitrate: ([0-9,.]+) kb/s""".r
-  private val DurationStartAndBitrateShort = """Duration: ([0-9]{2}):([0-9]{2}):([0-9]{2}).([0-9]{2}), bitrate: ([0-9,.]+) kb/s""".r
-  private val VideoDetails = """Stream #\d[.:]\d\(und\): Video: (.+?), (.+?), (\d+)x(\d+)(.*?), (\d+) kb/s, .*?([0-9.]+) fps.*""".r
-  private val AudioDetails = """Stream #\d[.:]\d(?:\(und\))?: Audio: (\S+)( [(].+[)])?,.*? (\d+) Hz, (.+?),.*""".r
-  private val MetaDataRegex = """(\S+)\s*:\s*(.+)""".r
-
-  def info(file: File) = {
-    val dateParser = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
-    val filename = file.getAbsolutePath
-    var mediaInfo = MediaInfo()
-    var mediaMeta = MetaData()
-    var videoInfo: VideoInfo = null
-    var videoMeta = MetaData()
-    var audioInfo: AudioInfo = null
-    var audioMeta = MetaData()
-
-    var mode: String = null
-
-    def processLine(line: String) = {
-      logger.debug(line)
-      line match {
-        case "Metadata:" if mode == null => mode = "general"
-        case CreationTime(time) => mediaInfo = mediaInfo.copy(created = dateParser.parse(time).getTime)
-        case DurationStartAndBitrate(hours, minutes, seconds, millis, start, bitRate) => {
-          val duration = hours.toDouble.hours + minutes.toDouble.minutes + seconds.toDouble.seconds + (millis.toDouble / 100.0)
-          mediaInfo = mediaInfo.copy(duration = duration, start = start.toDouble, bitRate = bitRate.toLong)
-        }
-        case DurationStartAndBitrateShort(hours, minutes, seconds, millis, bitRate) => {
-          val duration = hours.toDouble.hours + minutes.toDouble.minutes + seconds.toDouble.seconds + (millis.toDouble / 100.0)
-          mediaInfo = mediaInfo.copy(duration = duration, bitRate = bitRate.toLong)
-        }
-        case VideoDetails(codec, colorSpace, width, height, sizeExtra, kbPerSecond, fps) => {
-          videoInfo = VideoInfo(codec, width.toInt, height.toInt, fps.toDouble)
-          mode = "video"
-        }
-        case AudioDetails(codec, extra, range, speakers) => {
-          val stereo = speakers match {
-            case "stereo" => true
-            case "2 channels" => true
-            case "5.1" => true
-            case "5.1(side)" => true
-            case _ => throw new RuntimeException(s"Unsupported speaker configuration: $speakers.")
-          }
-          audioInfo = AudioInfo(codec, range.toLong, stereo)
-          mode = "audio"
-        }
-        case MetaDataRegex(key, value) => mode match {
-          case null => // Ignore
-          case "general" => mediaMeta = mediaMeta(key, value)
-          case "video" => videoMeta = videoMeta(key, value)
-          case "audio" => audioMeta = audioMeta(key, value)
-        }
-        case _ => // Ignore
-      }
+  /**
+    * Gets the MediaInfo for the specified media file.
+    *
+    * @param file an audio or video file to get the information for.
+    * @return MediaInfo
+    */
+  def info(file: File): MediaInfo = {
+    assert(file.isFile, s"File was not found: ${file.getAbsolutePath}")
+    val command = Seq(
+      "ffprobe",
+      "-v",
+      "quiet",
+      "-print_format", "json",
+      "-show_format",
+      "-show_streams",
+      file.getCanonicalPath
+    )
+    val b = new StringBuilder
+    val log: String => Unit = (line: String) => {
+      b.append(line)
+      b.append('\n')
+      ()
     }
-
-    val log: String => Unit = (s: String) => processLine(s.trim)
-    val command = Seq("ffprobe", filename)
-    val result = command ! ProcessLogger(log, log)
+    val result = command ! ProcessLogger(log, (err: String) => logger.error(err))
     if (result != 0) {
       throw new RuntimeException(s"Bad result while trying to execute ffprobe: $result. Command: ${command.mkString(" ")}. Verify ffmpeg is installed.")
     }
-
-    if (videoInfo != null) {
-      videoInfo = videoInfo.copy(meta = videoMeta)
-    }
-    if (audioInfo != null) {
-      audioInfo = audioInfo.copy(meta = audioMeta)
-    }
-    mediaInfo.copy(meta = mediaMeta, video = videoInfo, audio = audioInfo)
+    MediaInfo(b.toString())
   }
 
-  def screenGrab(video: File, offset: Double, image: File) = {
-    val transcode = Transcode(video, image, start = offset, videoCodec = VideoCodec.mjpeg, videoFrames = 1, disableAudio = true, forceFormat = "rawvideo")
-    transcode.execute()
+  /**
+    * Create an image from a specific position in a video file.
+    *
+    * @param video the video to grab from
+    * @param offset the position in the video
+    * @param image the file to write out the image to
+    * @return Transcode instance that can be executed
+    */
+  def screenGrab(video: File, offset: Double, image: File): Transcode = {
+    Transcode(video, image, start = offset, videoCodec = VideoCodec.mjpeg, videoFrames = 1, disableAudio = true, forceFormat = "rawvideo")
   }
 
-  def scaleAndCropFilters(info: MediaInfo, width: Int, height: Int) = {
+  /**
+    * Creates ScaleFilter and CropFilter to size the media to the specified width and height.
+    *
+    * @param info the info for the media that needs to be sized
+    * @param width the destination width
+    * @param height the destination height
+    * @return (ScaleFilter, CropFilter)
+    */
+  def scaleAndCropFilters(info: MediaInfo, width: Int, height: Int): (ScaleFilter, CropFilter) = {
     val widthAspect = width.toDouble / info.video.width.toDouble
     val heightAspect = height.toDouble / info.video.height.toDouble
     val (scaledWidth, scaledHeight) = if (widthAspect > heightAspect) {
@@ -107,26 +80,51 @@ object VideoUtil extends Logging {
     ScaleFilter(scaledWidth, scaledHeight) -> CropFilter(width, height, xOffset, yOffset)
   }
 
-  def webH264Transcoder(input: File, output: File) = {
-    Transcode(
-      input, output, videoCodec = VideoCodec.libx264, videoProfile = VideoProfile.High, preset = Preset.Slow,
-      videoBitRate = 500000, maxRate = 500000, bufferSize = 1000000, threads = 0, audioCodec = AudioCodec.libfdkAAC,
-      audioBitRate = 128000
-    )
-  }
-  def webmTranscoder(input: File, output: File) = {
-    Transcode(
-      input, output, videoCodec = VideoCodec.libvpx, videoBitRate = 500000, maxRate = 500000, audioCodec = AudioCodec.libvorbis
-    )
-  }
+  /**
+    * Preset for Web H264 video transcoding.
+    *
+    * @param input the source video file
+    * @param output the destination video file
+    * @return Transcode instance that can be executed
+    */
+  def webH264Transcoder(input: File, output: File): Transcode = Transcode(
+    input, output, videoCodec = VideoCodec.libx264, videoProfile = VideoProfile.High, preset = Preset.Slow,
+    videoBitRate = 500000, maxRate = 500000, bufferSize = 1000000, threads = 0, audioCodec = AudioCodec.libfdkAAC,
+    audioBitRate = 128000
+  )
 
-  def webAudioTranscoder(input: File, output: File) = {
-    Transcode(
-      input, output, audioCodec = AudioCodec.libmp3Lame, audioQuality = 2
-    )
-  }
+  /**
+    * Preset for WebM video transcoding.
+    *
+    * @param input the source video file
+    * @param output the destination video file
+    * @return Transcode instance that can be executed
+    */
+  def webmTranscoder(input: File, output: File): Transcode = Transcode(
+    input, output, videoCodec = VideoCodec.libvpx, videoBitRate = 500000, maxRate = 500000, audioCodec = AudioCodec.libvorbis
+  )
 
-  def copy(input: File, output: File, start: Option[Double] = None, duration: Option[Double] = None) = {
+  /**
+    * Preset for MP3 audio transcoding.
+    *
+    * @param input the source audio file
+    * @param output the destination audio file
+    * @return Transcode instance that can be executed
+    */
+  def webAudioTranscoder(input: File, output: File): Transcode = Transcode(
+    input, output, audioCodec = AudioCodec.libmp3Lame, audioQuality = 2
+  )
+
+  /**
+    * Creates a copy of the audio or video allowing to limit the start and duration of the resulting file.
+    *
+    * @param input the source video or audio file
+    * @param output the destination video or audio file
+    * @param start the position (in seconds) to start copying from the source (defaults to None)
+    * @param duration the amount of time (in seconds) to copy from start (defaults to None)
+    * @return Transcode instance that can be executed
+    */
+  def copy(input: File, output: File, start: Option[Double] = None, duration: Option[Double] = None): Transcode = {
     var t = Transcode(
       input, output, videoCodec = VideoCodec.copy, audioCodec = AudioCodec.copy
     )
