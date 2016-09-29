@@ -1,4 +1,6 @@
-package org.matthicks.media4s.video
+package org.matthicks.media4s.video.info
+
+import org.matthicks.media4s.video.MetaData
 
 /**
  * @author Matt Hicks <matt@outr.com>

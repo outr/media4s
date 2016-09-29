@@ -1,5 +1,7 @@
 package org.matthicks.media4s.video
 
+import java.util.Calendar
+
 case class MetaData(map: Map[String, Any] = Map.empty) {
   def apply(key: String, value: String) = copy(map + (key -> MetaData.fromString(value)))
 

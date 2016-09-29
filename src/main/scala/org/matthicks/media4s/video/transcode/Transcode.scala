@@ -1,12 +1,16 @@
-package org.matthicks.media4s.video
+package org.matthicks.media4s.video.transcode
 
 import java.io.File
 
 import com.outr.scribe.Logging
+import org.matthicks.media4s.video.codec.{AudioCodec, VideoCodec}
+import org.matthicks.media4s.video.filter.VideoFilter
+import org.matthicks.media4s.video.{Preset, VideoProfile, VideoUtil}
+import org.powerscala.concurrent.Time._
 import org.powerscala.concurrent.{Elapsed, Time}
 
 import scala.collection.mutable.ListBuffer
-import scala.sys.process.ProcessLogger
+import scala.sys.process._
 
 /**
  * @param inputDelay  Delays the input file's video streams by [[inputDelay]] seconds

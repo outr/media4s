@@ -4,10 +4,12 @@ import java.io.File
 import java.text.SimpleDateFormat
 
 import com.outr.scribe.Logging
-import org.powerscala.concurrent.{Elapsed, Time}
+import org.matthicks.media4s.video.codec.{AudioCodec, VideoCodec}
+import org.matthicks.media4s.video.filter.{CropFilter, ScaleFilter}
+import org.matthicks.media4s.video.info.{AudioInfo, MediaInfo, VideoInfo}
+import org.matthicks.media4s.video.transcode.Transcode
 import org.powerscala.concurrent.Time._
 
-import scala.collection.mutable.ListBuffer
 import scala.sys.process._
 
 /**

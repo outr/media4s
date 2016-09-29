@@ -1,4 +1,4 @@
-package org.matthicks.media4s.video
+package org.matthicks.media4s.video.codec
 
 sealed abstract class AudioCodec(val value: String)
 
