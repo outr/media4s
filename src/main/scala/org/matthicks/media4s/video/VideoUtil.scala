@@ -1,16 +1,13 @@
 package org.matthicks.media4s.video
 
 import java.io.File
-import java.text.SimpleDateFormat
 
 import com.outr.scribe.Logging
 import org.matthicks.media4s.video.codec.{AudioCodec, VideoCodec}
 import org.matthicks.media4s.video.filter.{CropFilter, ScaleFilter}
-import org.matthicks.media4s.video.info.{AudioInfo, MediaInfo, VideoInfo}
+import org.matthicks.media4s.video.info.MediaInfo
 import org.matthicks.media4s.video.transcode.Transcode
-import org.powerscala.concurrent.Time._
 
-import scala.io.Source
 import scala.sys.process._
 
 /**

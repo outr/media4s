@@ -1,7 +1,5 @@
 package org.matthicks.media4s.video.info
 
-import java.text.SimpleDateFormat
-
 import com.outr.scribe.Logging
 import org.matthicks.media4s.video.MetaData
 import rapture.json._

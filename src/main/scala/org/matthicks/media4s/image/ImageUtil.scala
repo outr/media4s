@@ -3,13 +3,13 @@ package org.matthicks.media4s.image
 import java.io._
 
 import com.outr.scribe.Logging
-import org.apache.batik.transcoder.svg2svg.SVGTranscoder
 import org.apache.batik.transcoder._
 import org.apache.batik.transcoder.image.{ImageTranscoder, JPEGTranscoder, PNGTranscoder}
+import org.apache.batik.transcoder.svg2svg.SVGTranscoder
 import org.im4java.core.{CompositeCmd, ConvertCmd, IMOperation, Info}
 import org.matthicks.media4s.file.FileHelpers
 
-import scala.util.{Success, Try}
+import scala.util.Try
 
 /**
  * @author Matt Hicks <matt@outr.com>

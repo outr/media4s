@@ -3,10 +3,7 @@ package specs
 import java.io.File
 
 import org.matthicks.media4s.video.VideoUtil
-import org.matthicks.media4s.video.info.MediaInfo
 import org.scalatest.{Matchers, WordSpec}
-
-import scala.io.Source
 
 class VideoSpec extends WordSpec with Matchers {
   "VideoUtil" should {
