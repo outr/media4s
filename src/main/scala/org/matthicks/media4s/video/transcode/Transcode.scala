@@ -39,7 +39,8 @@ case class Transcode(input: File,
                      videoFilters: List[VideoFilter] = Nil,
                      start: Double = 0.0,
                      duration: Double = 0.0,
-                     priority: Int = 10) extends Logging {
+                     priority: Int = 10,
+                     progressLog: Option[File] = None) extends Logging {
   private val ProgressRegex = """frame=\s*(\d+) fps=\s*([0-9.]+) q=([-0-9.]+) (L?)size=\s*(\d+)kB time=(\d{2}):(\d{2}):(\d{2})[.](\d+) bitrate=\s*([0-9.]+)kbits/s.*""".r
 
   lazy val info = VideoUtil.info(input)
@@ -49,6 +50,10 @@ case class Transcode(input: File,
     command += "nice"
     command += s"--adjustment=$priority"
     command += "ffmpeg"
+    progressLog.foreach { logFile =>
+      command += "-progress"
+      command += logFile.getAbsolutePath
+    }
     def add(args: Any*) = args.foreach {
       case arg => command += arg.toString
     }
@@ -124,7 +129,12 @@ case class Transcode(input: File,
     var lastLine: String = null
     val log = (line: String) => line match {
       case ProgressRegex(frame, fps, q, last, size, hours, minutes, seconds, millis, bitRate) => {
-        val percentage = frame.toDouble / info.frames.toDouble
+        val timeProcessed = seconds.toDouble + (minutes.toDouble * 60.0) + (hours.toDouble * 60.0 * 60.0)
+        val percentage = if (duration != 0.0) {
+          timeProcessed / duration
+        } else {
+          timeProcessed / info.duration
+        }
         val time = hours.toDouble.hours + minutes.toDouble.minutes + seconds.toDouble.seconds + (millis.toDouble / 100.0)
         val elapsed = Time.fromMillis(System.currentTimeMillis() - start)
         val finished = last == "L"

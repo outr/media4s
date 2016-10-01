@@ -86,7 +86,7 @@ object VideoUtil extends Logging {
     */
   def webH264Transcoder(input: File, output: File): Transcode = Transcode(
     input, output, videoCodec = VideoCodec.libx264, videoProfile = VideoProfile.High, preset = Preset.Slow,
-    videoBitRate = 500000, maxRate = 500000, bufferSize = 1000000, threads = 0, audioCodec = AudioCodec.libfdkAAC,
+    videoBitRate = 500000, maxRate = 500000, bufferSize = 1000000, threads = 0, audioCodec = AudioCodec.AAC,
     audioBitRate = 128000
   )
 
