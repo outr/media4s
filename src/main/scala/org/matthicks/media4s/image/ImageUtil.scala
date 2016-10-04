@@ -15,6 +15,8 @@ import scala.util.Try
  * @author Matt Hicks <matt@outr.com>
  */
 object ImageUtil extends Logging {
+  var UseBatik = false
+
   def info(file: File): ImageInfo = {
     val filename = file.getAbsolutePath
     val info = new Info(filename)
@@ -47,8 +49,11 @@ object ImageUtil extends Logging {
       imageInfo
     }
 
-  def isRasterImage(file: File): Boolean =
+  def isRasterImage(file: File): Boolean = if (UseBatik) {
     info(file).imageType != ImageType.SVG
+  } else {
+    true
+  }
 
   /**
    * Validate a Vector
@@ -156,9 +161,6 @@ object ImageUtil extends Logging {
    * Resizes the supplied file with adaptive resizing based on the supplied
    * width and/or height values.
    *
-   * @note This method should not be used to alter a Vector image. It is called
-   *       when an original image processed and and original vector image
-   *       should not be have its size altered.
    * @param input the original file to resize
    * @param output generated image
    * @param width the width value option
@@ -171,8 +173,17 @@ object ImageUtil extends Logging {
                       strip: Boolean = true,
                       gaussianBlur: Double = 0.0,
                       quality: Double = 0.0): Unit =
-    if (!isRasterImage(input)) formatVectorGraphic(input, output)
-    else {
+    if (!isRasterImage(input)) {
+      val temp = File.createTempFile("rasterize", ".png")
+      try {
+        formatVectorGraphic(input, temp)
+        generateResized(temp, output, width, height, strip, gaussianBlur, quality)
+      } finally {
+        if (!temp.delete()) {
+          temp.deleteOnExit()
+        }
+      }
+    } else {
       val original = input.getAbsolutePath
       val altered = output.getAbsolutePath
       val op = new IMOperation
@@ -222,6 +233,7 @@ object ImageUtil extends Logging {
       op.addImage(original)
       op.thumbnail(width, height)
       op.background("transparent")
+      op.flatten()
       op.gravity("center")
       op.extent(width, height)
       op.addImage(altered)
@@ -318,6 +330,7 @@ object ImageUtil extends Logging {
       }
 
       op.addImage(original)
+      op.flatten()
       op.resize(width, height, '^')
       op.gravity("center")
       op.crop(width, height, 0, 0)

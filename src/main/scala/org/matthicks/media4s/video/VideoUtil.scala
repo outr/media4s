@@ -95,10 +95,15 @@ object VideoUtil extends Logging {
     *
     * @param input the source video file
     * @param output the destination video file
+    * @param vp9 true if encode with VP9, false to use vp8 (defaults to true)
     * @return Transcode instance that can be executed
     */
-  def webmTranscoder(input: File, output: File): Transcode = Transcode(
-    input, output, videoCodec = VideoCodec.libvpx, videoBitRate = 500000, maxRate = 500000, audioCodec = AudioCodec.libvorbis
+  def webmTranscoder(input: File, output: File, vp9: Boolean = true): Transcode = Transcode(
+    input, output,
+    videoCodec = if (vp9) VideoCodec.libvpx_vp9 else VideoCodec.libvpx,
+    videoBitRate = 500000,
+    maxRate = 500000,
+    audioCodec = AudioCodec.libvorbis
   )
 
   /**
