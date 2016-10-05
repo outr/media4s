@@ -6,7 +6,7 @@ import com.outr.scribe.Logging
 import org.matthicks.media4s.video.codec.{AudioCodec, VideoCodec}
 import org.matthicks.media4s.video.filter.{CropFilter, ScaleFilter}
 import org.matthicks.media4s.video.info.MediaInfo
-import org.matthicks.media4s.video.transcode.Transcode
+import org.matthicks.media4s.video.transcode.FFMPEGTranscoder
 
 import scala.sys.process._
 
@@ -52,8 +52,8 @@ object VideoUtil extends Logging {
     * @param image the file to write out the image to
     * @return Transcode instance that can be executed
     */
-  def screenGrab(video: File, offset: Double, image: File): Transcode = {
-    Transcode(video, image, start = offset, videoCodec = VideoCodec.mjpeg, videoFrames = 1, disableAudio = true, forceFormat = "rawvideo")
+  def screenGrab(video: File, offset: Double, image: File): FFMPEGTranscoder = {
+    FFMPEGTranscoder().i(video).start(offset).videoCodec(VideoCodec.mjpeg).videoFrames(1).disableAudio().forceFormat("rawvideo").output(image)
   }
 
   /**
@@ -84,11 +84,11 @@ object VideoUtil extends Logging {
     * @param output the destination video file
     * @return Transcode instance that can be executed
     */
-  def webH264Transcoder(input: File, output: File): Transcode = Transcode(
-    input, output, videoCodec = VideoCodec.libx264, videoProfile = VideoProfile.High, preset = Preset.Slow,
-    videoBitRate = 500000, maxRate = 500000, bufferSize = 1000000, threads = 0, audioCodec = AudioCodec.AAC,
-    audioBitRate = 128000
-  )
+  def webH264Transcoder(input: File, output: File): FFMPEGTranscoder = {
+    FFMPEGTranscoder().input(input).videoCodec(VideoCodec.libx264).videoProfile(VideoProfile.High).preset(Preset.Slow)
+      .videoBitRate(500000).maxRate(500000).bufferSize(1000000).threads(0).audioCodec(AudioCodec.AAC)
+      .audioBitRate(128000).output(output)
+  }
 
   /**
     * Preset for WebM video transcoding.
@@ -98,13 +98,10 @@ object VideoUtil extends Logging {
     * @param vp9 true if encode with VP9, false to use vp8 (defaults to true)
     * @return Transcode instance that can be executed
     */
-  def webmTranscoder(input: File, output: File, vp9: Boolean = true): Transcode = Transcode(
-    input, output,
-    videoCodec = if (vp9) VideoCodec.libvpx_vp9 else VideoCodec.libvpx,
-    videoBitRate = 500000,
-    maxRate = 500000,
-    audioCodec = AudioCodec.libvorbis
-  )
+  def webmTranscoder(input: File, output: File, vp9: Boolean = true): FFMPEGTranscoder = {
+    FFMPEGTranscoder().input(input).videoCodec(if (vp9) VideoCodec.libvpx_vp9 else VideoCodec.libvpx)
+      .videoBitRate(500000).maxRate(500000).audioCodec(AudioCodec.libvorbis).output(output)
+  }
 
   /**
     * Preset for MP3 audio transcoding.
@@ -113,9 +110,13 @@ object VideoUtil extends Logging {
     * @param output the destination audio file
     * @return Transcode instance that can be executed
     */
-  def webMP3Transcoder(input: File, output: File): Transcode = Transcode(
-    input, output, audioCodec = AudioCodec.libmp3Lame, audioQuality = 2
-  )
+  def webMP3Transcoder(input: File, output: File, poster: Option[File] = None): FFMPEGTranscoder = {
+    var t = FFMPEGTranscoder().input(input)
+    poster.foreach { p =>
+      t = t.input(p).map(0, 0).map(1, 0).id3v2_version(4)
+    }
+    t.audioCodec(AudioCodec.libmp3Lame).audioQuality(2).output(output)
+  }
 
   /**
     * Preset for OGG audio transcoding.
@@ -124,14 +125,17 @@ object VideoUtil extends Logging {
     * @param output the destination audio file
     * @return Transcode instance that can be executed
     */
-  def webOGGTranscoder(input: File, output: File): Transcode = Transcode(
-    input, output, audioCodec = AudioCodec.libvorbis, audioQuality = 2
-  )
+  def webOGGTranscoder(input: File, output: File, poster: Option[File] = None): FFMPEGTranscoder = {
+    var t = FFMPEGTranscoder().input(input)
+    poster.foreach { p =>
+      t = t.input(p).map(0, 0).map(1, 0).id3v2_version(4)
+    }
+    t.audioCodec(AudioCodec.libvorbis).audioQuality(2).output(output)
+  }
 
-  def audioPoster(input: File, output: File): Transcode = Transcode(
-    input = input,
-    output = output
-  )
+  def audioPoster(input: File, output: File): FFMPEGTranscoder = {
+    FFMPEGTranscoder().input(input).output(output)
+  }
 
   /**
     * Creates a copy of the audio or video allowing to limit the start and duration of the resulting file.
@@ -142,16 +146,14 @@ object VideoUtil extends Logging {
     * @param duration the amount of time (in seconds) to copy from start (defaults to None)
     * @return Transcode instance that can be executed
     */
-  def copy(input: File, output: File, start: Option[Double] = None, duration: Option[Double] = None): Transcode = {
-    var t = Transcode(
-      input, output, videoCodec = VideoCodec.copy, audioCodec = AudioCodec.copy
-    )
+  def copy(input: File, output: File, start: Option[Double] = None, duration: Option[Double] = None): FFMPEGTranscoder = {
+    var t = FFMPEGTranscoder().input(input).codec.copy()
     start match {
-      case Some(s) => t = t.copy(start = s)
+      case Some(s) => t = t.start(s)
       case None => // Ignore
     }
     duration match {
-      case Some(d) => t = t.copy(duration = d)
+      case Some(d) => t = t.duration(d)
       case None => // Ignore
     }
     t
