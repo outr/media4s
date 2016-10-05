@@ -113,8 +113,24 @@ object VideoUtil extends Logging {
     * @param output the destination audio file
     * @return Transcode instance that can be executed
     */
-  def webAudioTranscoder(input: File, output: File): Transcode = Transcode(
+  def webMP3Transcoder(input: File, output: File): Transcode = Transcode(
     input, output, audioCodec = AudioCodec.libmp3Lame, audioQuality = 2
+  )
+
+  /**
+    * Preset for OGG audio transcoding.
+    *
+    * @param input the source audio file
+    * @param output the destination audio file
+    * @return Transcode instance that can be executed
+    */
+  def webOGGTranscoder(input: File, output: File): Transcode = Transcode(
+    input, output, audioCodec = AudioCodec.libvorbis, audioQuality = 2
+  )
+
+  def audioPoster(input: File, output: File): Transcode = Transcode(
+    input = input,
+    output = output
   )
 
   /**
