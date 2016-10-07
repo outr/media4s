@@ -5,14 +5,14 @@ import java.io.File
 import com.outr.scribe.Logging
 import org.matthicks.media4s.video.{Preset, VideoProfile, VideoUtil}
 import org.matthicks.media4s.video.codec.{AudioCodec, VideoCodec}
-import org.matthicks.media4s.video.filter.VideoFilter
+import org.matthicks.media4s.video.filter.{CropFilter, ScaleFilter, VideoFilter}
 import org.powerscala.concurrent.{Elapsed, Time}
 import org.powerscala.concurrent.Time._
 
 import scala.sys.process.ProcessLogger
 import scala.sys.process._
 
-class FFMPEGTranscoder(args: List[FFMPEGArgument]) extends Logging {
+class FFMPEGTranscoder(overwrite: Boolean = true, args: List[FFMPEGArgument]) extends Logging {
   private val ProgressRegex = """frame=\s*(\d+) fps=\s*([0-9.]+) q=([-0-9.]+) (L?)size=\s*(\d+)kB time=(\d{2}):(\d{2}):(\d{2})[.](\d+) bitrate=\s*([0-9.]+)kbits/s.*""".r
 
   lazy val command: List[String] = {
@@ -20,10 +20,82 @@ class FFMPEGTranscoder(args: List[FFMPEGArgument]) extends Logging {
   }
 
   def withArgs(arguments: Any*): FFMPEGTranscoder = {
-    new FFMPEGTranscoder(args ::: List(FFMPEGArgument(arguments.toList)))
+    new FFMPEGTranscoder(overwrite, args ::: List(FFMPEGArgument(arguments.toList)))
   }
   def findArg(param: String): Option[FFMPEGArgument] = {
     args.find(_.args.head == param)
+  }
+
+  /******** Preset Command-Line Args ***********/
+
+  def webH264(videoCodec: VideoCodec = VideoCodec.libx264,
+              audioCodec: AudioCodec = AudioCodec.AAC,
+              profile: VideoProfile = VideoProfile.High,
+              preset: Preset = Preset.Slow,
+              videoBitRate: Long = 500000L,
+              audioBitRate: Long = 128000L,
+              maxRate: Long = 500000L,
+              bufferSize: Long = 1000000L,
+              threads: Int = 0): FFMPEGTranscoder = {
+    this.videoCodec(videoCodec).videoProfile(profile).preset(preset)
+      .videoBitRate(videoBitRate).maxRate(maxRate).bufferSize(bufferSize).threads(threads)
+      .audioCodec(audioCodec).audioBitRate(audioBitRate)
+  }
+
+  def webm(videoCodec: VideoCodec = VideoCodec.libvpx_vp9,
+              audioCodec: AudioCodec = AudioCodec.libvorbis,
+              profile: VideoProfile = VideoProfile.High,
+              preset: Preset = Preset.Slow,
+              videoBitRate: Long = 500000L,
+              audioBitRate: Long = 128000L,
+              maxRate: Long = 500000L,
+              bufferSize: Long = 1000000L,
+              threads: Int = 0): FFMPEGTranscoder = {
+    this.videoCodec(videoCodec).videoProfile(profile).preset(preset)
+      .videoBitRate(videoBitRate).maxRate(maxRate).bufferSize(bufferSize).threads(threads)
+      .audioCodec(audioCodec).audioBitRate(audioBitRate)
+  }
+
+  def mp3(audioCodec: AudioCodec = AudioCodec.libmp3Lame,
+          audioQuality: Int = 2,
+          id3v2Version: Int = 4,
+          poster: Option[File] = None) = {
+    var t = this
+    poster.foreach { p =>
+      t = t.input(p).map(0, 0).map(1, 0).id3v2_version(id3v2Version)
+    }
+    t.audioCodec(audioCodec).audioQuality(audioQuality)
+  }
+
+  def ogg(audioCodec: AudioCodec = AudioCodec.libvorbis,
+          audioQuality: Int = 2,
+          id3v2Version: Int = 4,
+          poster: Option[File] = None) = {
+    var t = this
+    poster.foreach { p =>
+      t = t.input(p).map(0, 0).map(1, 0).id3v2_version(id3v2Version)
+    }
+    t.audioCodec(audioCodec).audioQuality(audioQuality)
+  }
+
+  def scaleAndCrop(originalWidth: Int, originalHeight: Int, destinationWidth: Int, destinationHeight: Int): FFMPEGTranscoder = {
+    val widthAspect = destinationWidth.toDouble / originalWidth.toDouble
+    val heightAspect = destinationHeight.toDouble / originalHeight.toDouble
+    val scaledWidth = if (widthAspect > heightAspect) {
+      destinationWidth
+    } else {
+      math.round(originalWidth.toDouble * heightAspect).toInt
+    }
+    val scaledHeight = if (widthAspect > heightAspect) {
+      math.round(originalHeight.toDouble * widthAspect).toInt
+    } else {
+      destinationHeight
+    }
+    val xOffset = math.round((scaledWidth - destinationWidth) / 2.0).toInt
+    val yOffset = math.round((scaledHeight - destinationHeight) / 2.0).toInt
+    val scale = ScaleFilter(scaledWidth, scaledHeight)
+    val crop = CropFilter(destinationWidth, destinationHeight, xOffset, yOffset)
+    videoFilters(List(scale, crop))
   }
 
   /******** Convenience Command-Line Args ***********/
@@ -46,7 +118,6 @@ class FFMPEGTranscoder(args: List[FFMPEGArgument]) extends Logging {
   def duration(seconds: Double) = t(seconds)
 
   /******** Standard Command-Line Args ***********/
-
   def an() = withArgs("-an")
   def bufsize(size: Long) = withArgs("-bufsize", size)
   def f(format: String) = withArgs("-f", format)
@@ -65,8 +136,7 @@ class FFMPEGTranscoder(args: List[FFMPEGArgument]) extends Logging {
   def threads(threadCount: Int) = withArgs("-threads", threadCount)
   def vf(filters: List[VideoFilter]) = withArgs("-vf", filters.map(_.value).mkString(","))
   def vframes(frameCount: Int) = withArgs("-vframes", frameCount)
-  def overwrite() = withArgs("-y")
-  def noOverwrite() = withArgs("-n")
+  def overwrite(value: Boolean) = new FFMPEGTranscoder(overwrite = value, args)
   object b {
     def a(bitRate: Long) = withArgs("-b:a", bitRate)
     def v(bitRate: Long) = withArgs("-b:v", bitRate)
@@ -111,7 +181,7 @@ class FFMPEGTranscoder(args: List[FFMPEGArgument]) extends Logging {
       }
     }
     val niceCommand = nicePriority match {
-      case Some(priority) => List("nice", s"--adjustment=$priority") ::: command
+      case Some(priority) => List("nice", s"--adjustment=$priority") ::: command ::: List(if (overwrite) "-y" else "-n")
       case None => command
     }
     logger.debug(s"Command: ${niceCommand.mkString(" ")}")
@@ -136,7 +206,7 @@ case class FFMPEGTime(seconds: Double) {
 case class FFMPEGArgument(args: List[Any])
 
 object FFMPEGTranscoder {
-  private val base = new FFMPEGTranscoder(Nil)
+  private val base = new FFMPEGTranscoder(args = Nil)
 
   def apply(): FFMPEGTranscoder = base
 }

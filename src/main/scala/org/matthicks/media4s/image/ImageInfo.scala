@@ -5,4 +5,4 @@ import org.matthicks.media4s.Info
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-case class ImageInfo(width: Int, height: Int, depth: Int, format: String, imageType: ImageType) extends Info
+case class ImageInfo(width: Int, height: Int, depth: Int, format: String, imageType: Option[ImageType]) extends Info

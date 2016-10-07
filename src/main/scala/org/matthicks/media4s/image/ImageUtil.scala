@@ -21,8 +21,7 @@ object ImageUtil extends Logging {
     val filename = file.getAbsolutePath
     val info = new Info(filename)
     val extension = filename.substring(filename.lastIndexOf('.') + 1)
-    val imageType = ImageType.fromExtension(extension).getOrElse(
-      throw new RuntimeException(s"No ImageType defined for extension: $extension"))
+    val imageType = ImageType.fromExtension(extension)
 
     ImageInfo(
       width = info.getImageWidth,
@@ -197,7 +196,8 @@ object ImageUtil extends Logging {
       if (gaussianBlur != 0.0) op.gaussianBlur(gaussianBlur)
       if (quality != 0) op.quality(quality)
 
-      op.addImage(original)
+      op.density(288)
+      op.addImage(s"$original[0]")
 
       // Only resize to shrink image to max width/height where defined.
       op.adaptiveResize(
@@ -230,7 +230,8 @@ object ImageUtil extends Logging {
       val altered = output.getAbsolutePath
       val op = new IMOperation
 
-      op.addImage(original)
+      op.density(288)
+      op.addImage(s"$original[0]")
       op.thumbnail(width, height)
       op.background("transparent")
       op.flatten()
@@ -329,7 +330,8 @@ object ImageUtil extends Logging {
         if (quality != 0) op.quality(quality)
       }
 
-      op.addImage(original)
+      op.density(288)
+      op.addImage(s"$original[0]")
       op.flatten()
       op.resize(width, height, '^')
       op.gravity("center")

@@ -40,7 +40,7 @@ class ImageSpec extends WordSpec with Matchers {
         outputStream.close()
       }
       val info = ImageUtil.info(tempFile)
-      info.imageType should equal(ImageType.JPEG)
+      info.imageType should equal(Some(ImageType.JPEG))
     }
     finally if (!tempFile.delete()) tempFile.deleteOnExit()
   }
