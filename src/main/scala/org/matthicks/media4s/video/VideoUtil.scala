@@ -45,18 +45,6 @@ object VideoUtil extends Logging {
   }
 
   /**
-    * Create an image from a specific position in a video file.
-    *
-    * @param video the video to grab from
-    * @param offset the position in the video
-    * @param image the file to write out the image to
-    * @return Transcode instance that can be executed
-    */
-  def screenGrab(video: File, offset: Double, image: File): FFMPEGTranscoder = {
-    FFMPEGTranscoder().i(video).start(offset).videoCodec(VideoCodec.mjpeg).videoFrames(1).disableAudio().forceFormat("rawvideo").output(image)
-  }
-
-  /**
     * Creates a copy of the audio or video allowing to limit the start and duration of the resulting file.
     *
     * @param input the source video or audio file

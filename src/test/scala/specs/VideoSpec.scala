@@ -28,7 +28,6 @@ class VideoSpec extends WordSpec with Matchers {
 
         override def progress(percentage: Double, frame: Int, fps: Double, q: Double, size: Long, time: Double, bitRate: Long, elapsed: Double, finished: Boolean): Unit = {
           percentage should be >= previous
-          println(s"progress: $percentage")
           previous = percentage
         }
       }
@@ -55,7 +54,6 @@ class VideoSpec extends WordSpec with Matchers {
 
         override def progress(percentage: Double, frame: Int, fps: Double, q: Double, size: Long, time: Double, bitRate: Long, elapsed: Double, finished: Boolean): Unit = {
           percentage should be >= previous
-          println(s"progress: $percentage")
           previous = percentage
         }
       }
@@ -75,5 +73,49 @@ class VideoSpec extends WordSpec with Matchers {
         }
       }
     }
+    // TODO: investigate this further
+    /*"transcode multiple outputs for one video" in {
+      val output1 = File.createTempFile("test", ".mp4")
+      val output2 = File.createTempFile("test", ".webm")
+      var previous: Double = 0.0
+      val listener = new TranscodeListener {
+        override def log(message: String): Unit = {}
+
+        override def progress(percentage: Double, frame: Int, fps: Double, q: Double, size: Long, time: Double, bitRate: Long, elapsed: Double, finished: Boolean): Unit = {
+          percentage should be >= previous
+          previous = percentage
+        }
+      }
+      try {
+        val info = VideoUtil.info(trailer480p)
+        val t = FFMPEGTranscoder()
+          .input(trailer480p)
+          .webH264()
+          .scaleAndCrop(info.video.width, info.video.height, 50, 50)
+          .output(output1)
+          .webm()
+          .scaleAndCrop(info.video.width, info.video.height, 50, 50)
+          .output(output2)
+        t.execute(Some(listener))
+        math.floor(previous) should be(1.0)
+
+        val o1Info = VideoUtil.info(output1)
+        o1Info.video.width should be(50)
+        o1Info.video.height should be(50)
+        o1Info.video.codec should be("")
+
+        val o2Info = VideoUtil.info(output2)
+        o2Info.video.width should be(50)
+        o2Info.video.height should be(50)
+        o2Info.video.codec should be("")
+      } finally {
+        if (!output1.delete()) {
+          output1.deleteOnExit()
+        }
+        if (!output2.delete()) {
+          output2.deleteOnExit()
+        }
+      }
+    }*/
   }
 }

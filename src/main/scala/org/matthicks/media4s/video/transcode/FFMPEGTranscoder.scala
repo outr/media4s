@@ -6,6 +6,7 @@ import com.outr.scribe.Logging
 import org.matthicks.media4s.video.{Preset, VideoProfile, VideoUtil}
 import org.matthicks.media4s.video.codec.{AudioCodec, VideoCodec}
 import org.matthicks.media4s.video.filter.{CropFilter, ScaleFilter, VideoFilter}
+import org.matthicks.media4s.video.info.MediaInfo
 import org.powerscala.concurrent.{Elapsed, Time}
 import org.powerscala.concurrent.Time._
 
@@ -44,15 +45,12 @@ class FFMPEGTranscoder(overwrite: Boolean = true, args: List[FFMPEGArgument]) ex
 
   def webm(videoCodec: VideoCodec = VideoCodec.libvpx_vp9,
               audioCodec: AudioCodec = AudioCodec.libvorbis,
-              profile: VideoProfile = VideoProfile.High,
-              preset: Preset = Preset.Slow,
               videoBitRate: Long = 500000L,
               audioBitRate: Long = 128000L,
               maxRate: Long = 500000L,
               bufferSize: Long = 1000000L,
               threads: Int = 0): FFMPEGTranscoder = {
-    this.videoCodec(videoCodec).videoProfile(profile).preset(preset)
-      .videoBitRate(videoBitRate).maxRate(maxRate).bufferSize(bufferSize).threads(threads)
+    this.videoCodec(videoCodec).videoBitRate(videoBitRate).maxRate(maxRate).bufferSize(bufferSize).threads(threads)
       .audioCodec(audioCodec).audioBitRate(audioBitRate)
   }
 
@@ -96,6 +94,14 @@ class FFMPEGTranscoder(overwrite: Boolean = true, args: List[FFMPEGArgument]) ex
     val scale = ScaleFilter(scaledWidth, scaledHeight)
     val crop = CropFilter(destinationWidth, destinationHeight, xOffset, yOffset)
     videoFilters(List(scale, crop))
+  }
+
+  def screenGrab(offset: Double): FFMPEGTranscoder = {
+    start(offset).videoCodec(VideoCodec.mjpeg).videoFrames(1).disableAudio().forceFormat("rawvideo")
+  }
+
+  def scaleAndCrop(info: MediaInfo, width: Int, height: Int): FFMPEGTranscoder = {
+    scaleAndCrop(info.video.width, info.video.height, width, height)
   }
 
   /******** Convenience Command-Line Args ***********/
@@ -187,7 +193,7 @@ class FFMPEGTranscoder(overwrite: Boolean = true, args: List[FFMPEGArgument]) ex
     logger.debug(s"Command: ${niceCommand.mkString(" ")}")
     val result = niceCommand ! ProcessLogger(log)
     if (result != 0) {
-      throw new TranscodeFailedException(s"Failed transcoding (${command.mkString(" ")}). Received result: $result. $lastLine")
+      throw new TranscodeFailedException(s"Failed transcoding (${niceCommand.mkString(" ")}). Received result: $result. $lastLine")
     }
   }
 }
