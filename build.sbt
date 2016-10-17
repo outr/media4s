@@ -2,7 +2,7 @@ name := "media4s"
 
 organization := "org.matthicks"
 
-version := "1.0.1-SNAPSHOT"
+version := "1.0.1"
 
 scalaVersion := "2.11.8"
 
