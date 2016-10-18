@@ -42,7 +42,7 @@ object MediaInfo extends Logging {
             width = stream.width.as[Int],
             height = stream.height.as[Int],
             fps = fps,
-            tags = Tags(stream.tags.as[Map[String, String]])
+            tags = Tags(stream.tags.as[Option[Map[String, String]]].getOrElse(Map.empty))
           )
           if (videoInfo.nonEmpty) throw new RuntimeException("Multiple video formats detected!")
           videoInfo = Some(video)

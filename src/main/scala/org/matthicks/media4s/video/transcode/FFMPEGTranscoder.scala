@@ -5,7 +5,7 @@ import java.io.File
 import com.outr.scribe.Logging
 import org.matthicks.media4s.video.{Preset, VideoProfile, VideoUtil}
 import org.matthicks.media4s.video.codec.{AudioCodec, VideoCodec}
-import org.matthicks.media4s.video.filter.{CropFilter, ScaleFilter, VideoFilter}
+import org.matthicks.media4s.video.filter.{CropFilter, FPSFilter, ScaleFilter, VideoFilter}
 import org.matthicks.media4s.video.info.MediaInfo
 import org.powerscala.concurrent.{Elapsed, Time}
 import org.powerscala.concurrent.Time._
@@ -100,6 +100,10 @@ class FFMPEGTranscoder(overwrite: Boolean = true, args: List[FFMPEGArgument]) ex
     start(offset).videoCodec(VideoCodec.mjpeg).videoFrames(1).disableAudio().forceFormat("rawvideo")
   }
 
+  def keyFrames(framesPerSecond: Double): FFMPEGTranscoder = {
+    videoFilters(List(FPSFilter(framesPerSecond)))
+  }
+
   def scaleAndCrop(info: MediaInfo, width: Int, height: Int): FFMPEGTranscoder = {
     scaleAndCrop(info.video.width, info.video.height, width, height)
   }
@@ -135,6 +139,7 @@ class FFMPEGTranscoder(overwrite: Boolean = true, args: List[FFMPEGArgument]) ex
   def map_metadata(id: Int) = withArgs("-map_metadata", id)
   def maxrate(maxRate: Long) = withArgs("-maxrate", maxRate)
   def o(file: File) = withArgs(FFMPEGFile(file))
+  def o(path: String) = withArgs(path)
   def pass(pass: Int) = withArgs("-pass", pass)
   def preset(preset: Preset) = withArgs("-preset", preset.value)
   def ss(seconds: Double) = withArgs("-ss", FFMPEGTime(seconds))
