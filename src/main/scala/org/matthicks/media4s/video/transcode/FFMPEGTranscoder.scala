@@ -76,36 +76,8 @@ class FFMPEGTranscoder(overwrite: Boolean = true, args: List[FFMPEGArgument]) ex
     t.audioCodec(audioCodec).audioQuality(audioQuality)
   }
 
-  def scaleAndCrop(originalWidth: Int, originalHeight: Int, destinationWidth: Int, destinationHeight: Int): FFMPEGTranscoder = {
-    val widthAspect = destinationWidth.toDouble / originalWidth.toDouble
-    val heightAspect = destinationHeight.toDouble / originalHeight.toDouble
-    val scaledWidth = if (widthAspect > heightAspect) {
-      destinationWidth
-    } else {
-      math.round(originalWidth.toDouble * heightAspect).toInt
-    }
-    val scaledHeight = if (widthAspect > heightAspect) {
-      math.round(originalHeight.toDouble * widthAspect).toInt
-    } else {
-      destinationHeight
-    }
-    val xOffset = math.round((scaledWidth - destinationWidth) / 2.0).toInt
-    val yOffset = math.round((scaledHeight - destinationHeight) / 2.0).toInt
-    val scale = ScaleFilter(scaledWidth, scaledHeight)
-    val crop = CropFilter(destinationWidth, destinationHeight, xOffset, yOffset)
-    videoFilters(List(scale, crop))
-  }
-
   def screenGrab(offset: Double): FFMPEGTranscoder = {
     start(offset).videoCodec(VideoCodec.mjpeg).videoFrames(1).disableAudio().forceFormat("rawvideo")
-  }
-
-  def keyFrames(framesPerSecond: Double): FFMPEGTranscoder = {
-    videoFilters(List(FPSFilter(framesPerSecond)))
-  }
-
-  def scaleAndCrop(info: MediaInfo, width: Int, height: Int): FFMPEGTranscoder = {
-    scaleAndCrop(info.video.width, info.video.height, width, height)
   }
 
   /******** Convenience Command-Line Args ***********/
@@ -123,7 +95,7 @@ class FFMPEGTranscoder(overwrite: Boolean = true, args: List[FFMPEGArgument]) ex
   def audioQuality(quality: Int) = qscale.a(quality)
   def forceFormat(format: String) = f(format)
   def disableAudio() = an()
-  def videoFilters(filters: List[VideoFilter]) = vf(filters)
+  def videoFilters(filters: VideoFilter*) = vf(filters.toList)
   def start(seconds: Double) = ss(seconds)
   def duration(seconds: Double) = t(seconds)
 
