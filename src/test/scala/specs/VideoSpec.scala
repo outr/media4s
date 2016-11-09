@@ -3,6 +3,7 @@ package specs
 import java.io.File
 
 import org.matthicks.media4s.video.VideoUtil
+import org.matthicks.media4s.video.filter.{CropFilter, ScaleFilter}
 import org.matthicks.media4s.video.transcode.{FFMPEGTranscoder, TranscodeListener}
 import org.scalatest.{Matchers, WordSpec}
 
@@ -36,7 +37,7 @@ class VideoSpec extends WordSpec with Matchers {
         val t = FFMPEGTranscoder()
           .input(trailer480p)
           .webH264()
-          .scaleAndCrop(info.video.width, info.video.height, 50, 50)
+          .videoFilters(ScaleFilter.create(info, 50, 50), CropFilter.create(info, 50, 50))
           .output(output)
         t.execute(Some(listener))
         math.floor(previous) should be(1.0)
@@ -62,7 +63,7 @@ class VideoSpec extends WordSpec with Matchers {
         val t = FFMPEGTranscoder()
           .input(trailer480p)
           .webH264()
-          .scaleAndCrop(info.video.width, info.video.height, 50, 50)
+          .videoFilters(ScaleFilter.create(info, 50, 50), CropFilter.create(info, 50, 50))
           .duration(25.0)
           .output(output)
         t.execute(Some(listener))

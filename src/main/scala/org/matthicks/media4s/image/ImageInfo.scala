@@ -1,8 +1,5 @@
 package org.matthicks.media4s.image
 
-import org.matthicks.media4s.Info
+import org.matthicks.media4s.Size
 
-/**
- * @author Matt Hicks <matt@outr.com>
- */
-case class ImageInfo(width: Int, height: Int, depth: Int, format: String, imageType: Option[ImageType]) extends Info
+case class ImageInfo(width: Int, height: Int, depth: Int, format: String, imageType: Option[ImageType]) extends Size

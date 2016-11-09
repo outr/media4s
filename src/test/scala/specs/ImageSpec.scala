@@ -2,49 +2,10 @@ package specs
 
 import java.io._
 
-import org.apache.batik.transcoder.image.JPEGTranscoder
-import org.apache.batik.transcoder.{TranscoderInput, TranscoderOutput}
 import org.matthicks.media4s.image.{ImageInfo, ImageType, ImageUtil}
 import org.scalatest.{Matchers, WordSpec}
 
 class ImageSpec extends WordSpec with Matchers {
-  val testFileDirectory = "content/svg"
-  val testFileName = s"$testFileDirectory/batikCandy.svg"
-  "batik transcoder" in {
-    // Verbose, but we want to see that batik's trancoder is working
-    val transcoder = new JPEGTranscoder()
-    val quality: Float = .8f
-    transcoder.addTranscodingHint(JPEGTranscoder.KEY_QUALITY, quality)
-
-    val tempFileName = s"${testFileName.takeWhile(_ != '.')}.jpg"
-
-    val tempFile = new File(tempFileName)
-
-    try {
-      val inputFile = new File(testFileName)
-      val inputURL = inputFile.toURI.toURL
-      val inputStream = inputURL.openStream()
-      val reader = new BufferedReader(new InputStreamReader(inputStream))
-      val input = new TranscoderInput(reader)
-
-      input.setURI(inputURL.toString)
-
-      val outputStream = new BufferedOutputStream(new FileOutputStream(tempFile))
-      val output = new TranscoderOutput(outputStream)
-
-      try {
-        transcoder.transcode(input, output)
-      }
-      finally {
-        reader.close()
-        outputStream.close()
-      }
-      val info = ImageUtil.info(tempFile)
-      info.imageType should equal(Some(ImageType.JPEG))
-    }
-    finally if (!tempFile.delete()) tempFile.deleteOnExit()
-  }
-
   info("scaling up")
   import ImageUtil.scaleUp
   val baseInfo: ImageInfo = ImageInfo(0, 0, 0, null, null)

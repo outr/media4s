@@ -3,17 +3,17 @@ package org.matthicks.media4s.video.transcode
 import java.io.File
 
 import com.outr.scribe.Logging
+import org.matthicks.media4s.TranscodeFailedException
 import org.matthicks.media4s.video.{Preset, VideoProfile, VideoUtil}
 import org.matthicks.media4s.video.codec.{AudioCodec, VideoCodec}
-import org.matthicks.media4s.video.filter.{CropFilter, FPSFilter, ScaleFilter, VideoFilter}
-import org.matthicks.media4s.video.info.MediaInfo
-import org.powerscala.concurrent.{Elapsed, Time}
-import org.powerscala.concurrent.Time._
+import org.matthicks.media4s.video.filter.VideoFilter
 
 import scala.sys.process.ProcessLogger
 import scala.sys.process._
 
-class FFMPEGTranscoder(overwrite: Boolean = true, args: List[FFMPEGArgument]) extends Logging {
+import scala.concurrent.duration._
+
+class FFMPEGTranscoder private(overwrite: Boolean = true, args: List[FFMPEGArgument]) extends Logging {
   private val ProgressRegex = """frame=\s*(\d+) fps=\s*([0-9.]+) q=([-0-9.]+) (L?)size=\s*(\d+)kB time=(\d{2}):(\d{2}):(\d{2})[.](\d+) bitrate=\s*([0-9.]+)kbits/s.*""".r
 
   lazy val command: List[String] = {
@@ -152,8 +152,9 @@ class FFMPEGTranscoder(overwrite: Boolean = true, args: List[FFMPEGArgument]) ex
         } else {
           timeProcessed / info.duration
         }
-        val time = hours.toDouble.hours + minutes.toDouble.minutes + seconds.toDouble.seconds + (millis.toDouble / 100.0)
-        val elapsed = Time.fromMillis(System.currentTimeMillis() - start)
+
+        val time = hours.toInt.hours.toSeconds + minutes.toInt.minute.toSeconds + seconds.toInt + (millis.toDouble / 100.0)
+        val elapsed = (System.currentTimeMillis() - start) / 1000.0
         val finished = last == "L"
         monitor.foreach(_.progress(percentage, frame.toInt, fps.toDouble, q.toDouble, math.round(size.toDouble * 1000), time, math.round(bitRate.toDouble * 1000), elapsed, finished))
       }
@@ -181,8 +182,12 @@ case class FFMPEGFile(file: File) {
 
 case class FFMPEGTime(seconds: Double) {
   override def toString: String = {
-    val e = Elapsed(seconds)
-    f"${e.hours}%02d:${e.minutes}%02d:${e.seconds}%02d"
+    var d = seconds.seconds
+    val hours = d.toHours
+    d -= hours.hours
+    val minutes = d.toMinutes
+    d -= minutes.minutes
+    f"$hours%02d:$minutes%02d:${d.toSeconds}%02d"
   }
 }
 

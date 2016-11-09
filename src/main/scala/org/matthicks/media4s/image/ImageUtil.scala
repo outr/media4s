@@ -3,20 +3,10 @@ package org.matthicks.media4s.image
 import java.io._
 
 import com.outr.scribe.Logging
-import org.apache.batik.transcoder._
-import org.apache.batik.transcoder.image.{ImageTranscoder, JPEGTranscoder, PNGTranscoder}
-import org.apache.batik.transcoder.svg2svg.SVGTranscoder
 import org.im4java.core.{CompositeCmd, ConvertCmd, IMOperation, Info}
-import org.matthicks.media4s.file.FileHelpers
+import org.matthicks.media4s.Size
 
-import scala.util.Try
-
-/**
- * @author Matt Hicks <matt@outr.com>
- */
 object ImageUtil extends Logging {
-  var UseBatik = false
-
   def info(file: File): ImageInfo = {
     val filename = file.getAbsolutePath
     val info = new Info(filename)
@@ -47,98 +37,6 @@ object ImageUtil extends Logging {
     } else {
       imageInfo
     }
-
-  def isRasterImage(file: File): Boolean = if (UseBatik) {
-    info(file).imageType != ImageType.SVG
-  } else {
-    true
-  }
-
-  /**
-   * Validate a Vector
-   *
-   * Since it is possible to have a valid Vector with some limitations that a
-   * user may need to know, the Success returned will carry such warnings if
-   * applicable and available.
-   */
-  def validateVector(file: File): Try[List[String]] =
-    Try {
-      val srcInfo = info(file)
-
-      val tempFile = FileHelpers.createTempFile("png")
-      try {
-        rasterizeVectorGraphic(new PNGTranscoder(), file, tempFile,
-          Some(srcInfo.width), Some(srcInfo.height))
-      } finally {
-        FileHelpers.deleteFile(tempFile)
-      }
-    }.map(_ => List.empty[String]) // Would need a custom ErrorHandler to capture the Warnings.
-
-  /**
-   * Rasterize an SVG image to image type based on provided transcoder
-   *
-   * @param transcoder {{ImageTranscoder} used to rasterize the image.
-   * @param inFile source
-   * @param outFile target image in raster format
-   * @param width for destination image
-   * @param height for destination image
-   */
-  def rasterizeVectorGraphic(transcoder: ImageTranscoder,
-                             inFile: File,
-                             outFile: File,
-                             width: Option[Int] = None,
-                             height: Option[Int] = None,
-                             maxWidth: Option[Int] = None,
-                             maxHeight: Option[Int] = None): Unit = {
-    width.foreach(n =>
-      transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_WIDTH, n.toFloat))
-    height.foreach(n =>
-      transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_HEIGHT, n.toFloat))
-    maxWidth.foreach(n =>
-      transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_MAX_WIDTH, n.toFloat))
-    maxHeight.foreach(n =>
-      transcoder.addTranscodingHint(SVGAbstractTranscoder.KEY_MAX_HEIGHT, n.toFloat))
-
-    val inputURL = inFile.toURI.toURL
-    val reader = new BufferedReader(new InputStreamReader(inputURL.openStream()))
-    val input = new TranscoderInput(reader)
-
-    input.setURI(inputURL.toString)
-
-    val outputStream = new BufferedOutputStream(new FileOutputStream(outFile))
-    val output = new TranscoderOutput(outputStream)
-
-    try transcoder.transcode(input, output)
-    finally {
-      reader.close()
-      outputStream.close()
-    }
-  }
-
-  /**
-   * Format SVG image for web use
-   */
-  def formatVectorGraphic(inFile: File, outFile: File): Unit = {
-    val transcoder = new SVGTranscoder()
-    transcoder.addTranscodingHint(SVGTranscoder.KEY_FORMAT, true)
-
-    val inputURL = inFile.toURI.toURL
-    val reader = new BufferedReader(
-      new InputStreamReader(inputURL.openStream()))
-
-    val input = new TranscoderInput(reader)
-    input.setURI(inputURL.toString)
-
-    val writer = new BufferedWriter(
-      new OutputStreamWriter(new FileOutputStream(outFile)))
-    val output = new TranscoderOutput(writer)
-
-    try transcoder.transcode(input, output)
-    finally {
-      reader.close()
-      writer.close()
-    }
-  }
 
   /**
    * Convert ImageMagick style JPEG quality to Batik style JPEG quality
@@ -171,45 +69,34 @@ object ImageUtil extends Logging {
                       height: Option[Int] = None,
                       strip: Boolean = true,
                       gaussianBlur: Double = 0.0,
-                      quality: Double = 0.0): Unit =
-    if (!isRasterImage(input)) {
-      val temp = File.createTempFile("rasterize", ".png")
-      try {
-        formatVectorGraphic(input, temp)
-        generateResized(temp, output, width, height, strip, gaussianBlur, quality)
-      } finally {
-        if (!temp.delete()) {
-          temp.deleteOnExit()
-        }
-      }
-    } else {
-      val original = input.getAbsolutePath
-      val altered = output.getAbsolutePath
-      val op = new IMOperation
+                      quality: Double = 0.0): Unit = {
+    val original = input.getAbsolutePath
+    val altered = output.getAbsolutePath
+    val op = new IMOperation
 
-      if (altered.endsWith(".jpg")) {
-        // Remove transparent background
-        op.flatten()
-      }
-
-      if (strip) op.strip()
-      if (gaussianBlur != 0.0) op.gaussianBlur(gaussianBlur)
-      if (quality != 0) op.quality(quality)
-
-      op.density(288)
-      op.addImage(s"$original[0]")
-
-      // Only resize to shrink image to max width/height where defined.
-      op.adaptiveResize(
-        width.map(Int.box).orNull,
-        height.map(Int.box).orNull,
-        '>')
-
-      op.addImage(altered)
-
-      val cmd = new ConvertCmd
-      cmd.run(op)
+    if (altered.endsWith(".jpg")) {
+      // Remove transparent background
+      op.flatten()
     }
+
+    if (strip) op.strip()
+    if (gaussianBlur != 0.0) op.gaussianBlur(gaussianBlur)
+    if (quality != 0) op.quality(quality)
+
+    op.density(288)
+    op.addImage(s"$original[0]")
+
+    // Only resize to shrink image to max width/height where defined.
+    op.adaptiveResize(
+      width.map(Int.box).orNull,
+      height.map(Int.box).orNull,
+      '>')
+
+    op.addImage(altered)
+
+    val cmd = new ConvertCmd
+    cmd.run(op)
+  }
 
   /**
    * Generates a thumbnail of the specified image file at the supplied width and
@@ -224,38 +111,23 @@ object ImageUtil extends Logging {
   def generateThumbnail(input: File,
                         output: File,
                         width: Int,
-                        height: Int): Unit =
-    if (isRasterImage(input)) {
-      val original = input.getAbsolutePath
-      val altered = output.getAbsolutePath
-      val op = new IMOperation
+                        height: Int): Unit = {
+    val original = input.getAbsolutePath
+    val altered = output.getAbsolutePath
+    val op = new IMOperation
 
-      op.density(288)
-      op.addImage(s"$original[0]")
-      op.thumbnail(width, height)
-      op.background("transparent")
-      op.flatten()
-      op.gravity("center")
-      op.extent(width, height)
-      op.addImage(altered)
+    op.density(288)
+    op.addImage(s"$original[0]")
+    op.thumbnail(width, height)
+    op.background("transparent")
+    op.flatten()
+    op.gravity("center")
+    op.extent(width, height)
+    op.addImage(altered)
 
-      val cmd = new ConvertCmd
-      cmd.run(op)
-    } else {
-      /* 1. Rasterize SVG to PNG at original size.
-       * 2. Convert the rasterized version of the source, a temp file, to
-       *    thumbnail size using ImageMagick.
-       */
-      val rasterised = FileHelpers.createTempFile("png")
-      try {
-        val srcInfo = scaleUp(info(input), width, height)
-        rasterizeVectorGraphic(new PNGTranscoder(), input, rasterised,
-          Some(srcInfo.width), Some(srcInfo.height))
-        generateThumbnail(rasterised, output, width, height)
-      } finally {
-        FileHelpers.deleteFile(rasterised)
-      }
-    }
+    val cmd = new ConvertCmd
+    cmd.run(op)
+  }
 
   def pngToJpg(input: File, output: File): Unit = {
     val op = new IMOperation
@@ -304,6 +176,26 @@ object ImageUtil extends Logging {
     if (gaussianBlur == 0.0d && quality == 0.0d) ImageType.PNG
     else ImageType.JPEG
 
+  def generateGIFCropped(input: File,
+                         output: File,
+                         width: Int,
+                         height: Int): Unit = {
+    val info = this.info(input)
+    var transcoder = GIFSicleTranscoder(input, output)
+      .resize(Some(width), Some(height))
+      .optimize(3)
+    val destination = Size(width, height)
+    if (info.aspectRatio != destination.aspectRatio) {
+      val cropped = info.cropToAspectRatio(destination)
+      val x1 = math.round((info.width - cropped.width) / 2.0).toInt
+      val y1 = math.round((info.height - cropped.height) / 2.0).toInt
+      val x2 = x1 + cropped.width
+      val y2 = y1 + cropped.height
+      transcoder = transcoder.crop(x1, y1, x2, y2)
+    }
+    transcoder.execute()
+  }
+
   /**
    * Generates an image completely filling the provided dimensions.
    *
@@ -318,49 +210,28 @@ object ImageUtil extends Logging {
                       height: Int,
                       strip: Boolean = true,
                       gaussianBlur: Double = 0.0d,
-                      quality: Double = 0.0d): Unit =
-    if (isRasterImage(input)) {
-      val original = input.getAbsolutePath
-      val altered = output.getAbsolutePath
-      val op = new IMOperation
+                      quality: Double = 0.0d,
+                      flatten: Boolean = true): Unit = {
+    val original = input.getAbsolutePath
+    val altered = output.getAbsolutePath
+    val op = new IMOperation
 
-      if (outputType == ImageType.JPEG) {
-        if (strip) op.strip()
-        if (gaussianBlur != 0.0) op.gaussianBlur(gaussianBlur)
-        if (quality != 0) op.quality(quality)
-      }
-
-      op.density(288)
-      op.addImage(s"$original[0]")
-      op.flatten()
-      op.resize(width, height, '^')
-      op.gravity("center")
-      op.crop(width, height, 0, 0)
-      op.p_repage()
-      op.addImage(altered)
-
-      val cmd = new ConvertCmd
-      cmd.run(op)
-    } else {
-      val srcInfo = scaleUp(info(input), width, height)
-      val rasterised = FileHelpers.createTempFile(outputType.extension)
-
-      try {
-        if (outputType == ImageType.JPEG) {
-          val transcoder = new JPEGTranscoder()
-          // Highest quality
-          transcoder.addTranscodingHint(JPEGTranscoder.KEY_QUALITY, 1f)
-          rasterizeVectorGraphic(transcoder, input, rasterised,
-            Some(srcInfo.width), Some(srcInfo.height))
-          generateCropped(rasterised, output, outputType, width, height, strip,
-            gaussianBlur, quality)
-        } else {
-          rasterizeVectorGraphic(new PNGTranscoder(), input, rasterised,
-            Some(srcInfo.width), Some(srcInfo.height))
-          generateCropped(rasterised, output, outputType, width, height)
-        }
-      } finally {
-        FileHelpers.deleteFile(rasterised)
-      }
+    if (outputType == ImageType.JPEG) {
+      if (strip) op.strip()
+      if (gaussianBlur != 0.0) op.gaussianBlur(gaussianBlur)
+      if (quality != 0) op.quality(quality)
     }
+
+    op.density(288)
+    op.addImage(s"$original[0]")
+    if (flatten) op.flatten()
+    op.resize(width, height, '^')
+    op.gravity("center")
+    op.crop(width, height, 0, 0)
+    op.p_repage()
+    op.addImage(altered)
+
+    val cmd = new ConvertCmd
+    cmd.run(op)
+  }
 }
