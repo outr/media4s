@@ -14,10 +14,10 @@ object ImageUtil extends Logging {
     val imageType = ImageType.fromExtension(extension)
 
     ImageInfo(
-      width = info.getImageWidth,
-      height = info.getImageHeight,
-      depth = info.getImageDepth,
-      format = info.getImageFormat,
+      width = info.getImageWidth(0),
+      height = info.getImageHeight(0),
+      depth = info.getImageDepth(0),
+      format = info.getImageFormat(0),
       imageType = imageType
     )
   }
