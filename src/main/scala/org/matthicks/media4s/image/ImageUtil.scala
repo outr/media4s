@@ -3,10 +3,12 @@ package org.matthicks.media4s.image
 import java.io._
 
 import com.outr.scribe.Logging
-import org.im4java.core.{CompositeCmd, ConvertCmd, IMOperation, Info}
+import org.im4java.core.{CompositeCmd, ConvertCmd, IMOperation, IMOps, Info}
 import org.matthicks.media4s.Size
 
 object ImageUtil extends Logging {
+  var iccProfiles = "/opt/icc"
+
   def info(file: File): ImageInfo = {
     val filename = file.getAbsolutePath
     val info = new Info(filename)
@@ -18,7 +20,8 @@ object ImageUtil extends Logging {
       height = info.getImageHeight(0),
       depth = info.getImageDepth(0),
       format = info.getImageFormat(0),
-      imageType = imageType
+      imageType = imageType,
+      colorSpace = Option(info.getProperty("Colorspace"))
     )
   }
 
@@ -39,22 +42,6 @@ object ImageUtil extends Logging {
     }
 
   /**
-   * Convert ImageMagick style JPEG quality to Batik style JPEG quality
-   *
-   * Quality works differently in Batik v. ImageMagick
-   * ImageMagick for JPEG 1 is the lowest quality and 100 is the highest
-   * Batik for JPEG 0.1 is the lowest quality and 1.0 is the highest
-   *
-   * Because 0 is outside of the correct quality range for either, we will use
-   * best quality when 0 is received.
-   *
-   * @param q ImageMagick style quality {{Double}}
-   * @return Batik style quality {{Float}}
-   */
-  protected def toBatikQuality(q: Double): Float =
-    if (q < 1) 1f else (q / 100).toFloat
-
-  /**
    * Resizes the supplied file with adaptive resizing based on the supplied
    * width and/or height values.
    *
@@ -69,7 +56,8 @@ object ImageUtil extends Logging {
                       height: Option[Int] = None,
                       strip: Boolean = true,
                       gaussianBlur: Double = 0.0,
-                      quality: Double = 0.0): Unit = {
+                      quality: Double = 0.0,
+                      isCMYK: Boolean = false): Unit = {
     val original = input.getAbsolutePath
     val altered = output.getAbsolutePath
     val op = new IMOperation
@@ -92,10 +80,20 @@ object ImageUtil extends Logging {
       height.map(Int.box).orNull,
       '>')
 
+    if (isCMYK) applyCMYKConversion(op)
+
     op.addImage(altered)
 
     val cmd = new ConvertCmd
     cmd.run(op)
+  }
+
+  def applyCMYKConversion(op: IMOperation): IMOps = {
+    if (!new File(s"$iccProfiles/CMYK/USWebCoatedSWOP.icc").exists()) {
+      throw new RuntimeException(s"ICC Profiles not installed properly in $iccProfiles.")
+    }
+    op.profile(s"$iccProfiles/CMYK/USWebCoatedSWOP.icc")
+    op.profile(s"$iccProfiles/RGB/AdobeRGB1998.icc")
   }
 
   /**
@@ -111,7 +109,8 @@ object ImageUtil extends Logging {
   def generateThumbnail(input: File,
                         output: File,
                         width: Int,
-                        height: Int): Unit = {
+                        height: Int,
+                        isCMYK: Boolean = false): Unit = {
     val original = input.getAbsolutePath
     val altered = output.getAbsolutePath
     val op = new IMOperation
@@ -123,6 +122,7 @@ object ImageUtil extends Logging {
     op.flatten()
     op.gravity("center")
     op.extent(width, height)
+    if (isCMYK) applyCMYKConversion(op)
     op.addImage(altered)
 
     val cmd = new ConvertCmd
@@ -211,7 +211,8 @@ object ImageUtil extends Logging {
                       strip: Boolean = true,
                       gaussianBlur: Double = 0.0d,
                       quality: Double = 0.0d,
-                      flatten: Boolean = true): Unit = {
+                      flatten: Boolean = true,
+                      isCMYK: Boolean = false): Unit = {
     val original = input.getAbsolutePath
     val altered = output.getAbsolutePath
     val op = new IMOperation
@@ -229,6 +230,7 @@ object ImageUtil extends Logging {
     op.gravity("center")
     op.crop(width, height, 0, 0)
     op.p_repage()
+    if (isCMYK) applyCMYKConversion(op)
     op.addImage(altered)
 
     val cmd = new ConvertCmd
