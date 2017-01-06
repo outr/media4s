@@ -118,5 +118,32 @@ class VideoSpec extends WordSpec with Matchers {
         }
       }
     }*/
-  }
+
+    val sampleflv = new File("content/video/SampleVideo_320x240_1mb.flv")
+
+    "gather the correct information for SampleVideo_320x240_1mb.flv" in {
+      val info = VideoUtil.info(sampleflv)
+      info.duration should be(10.64)
+      info.start should be(0.0)
+      info.bitRate should be(792900)
+      info.video.width should be(320)
+      info.video.height should be(240)
+      info.video.fps should be(25.0)
+      info.audio.bitRate should be(0)
+    }
+
+    val samplemkv = new File("content/video/SampleVideo_320x240_1mb.mkv")
+
+    "gather the correct information for SampleVideo_320x240_1mb.mkv" in {
+      val info = VideoUtil.info(samplemkv)
+      info.duration should be(9.818)
+      info.start should be(0.0)
+      info.bitRate should be(860233)
+      info.video.width should be(320)
+      info.video.height should be(240)
+      info.video.fps should be(25.0)
+      info.audio.bitRate should be(0)
+    }
+
+    }
 }

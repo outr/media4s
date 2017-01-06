@@ -8,7 +8,7 @@ import org.scalatest.{Matchers, WordSpec}
 class ImageSpec extends WordSpec with Matchers {
   info("scaling up")
   import ImageUtil.scaleUp
-  val baseInfo: ImageInfo = ImageInfo(0, 0, 0, null, null)
+  val baseInfo: ImageInfo = ImageInfo(0, 0, 0, null, None, None)
 
   "bad dimension" in {
     baseInfo should equal(scaleUp(baseInfo, 0, 0))
