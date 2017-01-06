@@ -50,7 +50,7 @@ object MediaInfo extends Logging {
         case "audio" => {
           val audio = AudioInfo(
             codec = stream.codec_name.as[String],
-            bitRate = stream.bit_rate.as[String].toLong,
+            bitRate = stream.bit_rate.as[Option[String]].map(_.toLong).getOrElse(0),
             channels = stream.channels.as[Int],
             channelLayout = stream.channel_layout.as[String],
             tags = Tags(stream.tags.as[Option[Map[String, String]]].getOrElse(Map.empty))
@@ -63,7 +63,7 @@ object MediaInfo extends Logging {
     }
     MediaInfo(
       duration = json.format.duration.as[String].toDouble,
-      start = json.format.start_time.as[String].toDouble,
+      start = json.format.start_time.as[Option[String]].map(_.toDouble).getOrElse(0),
       bitRate = json.format.bit_rate.as[String].toLong,
       videoInfo = videoInfo,
       audioInfo = audioInfo
