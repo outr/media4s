@@ -144,6 +144,5 @@ class VideoSpec extends WordSpec with Matchers {
       info.video.fps should be(25.0)
       info.audio.bitRate should be(0)
     }
-
-    }
+  }
 }
