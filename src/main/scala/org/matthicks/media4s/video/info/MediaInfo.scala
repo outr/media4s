@@ -53,7 +53,7 @@ object MediaInfo extends Logging {
             codec = root.codec_name.string.getOption(stream).get,
             bitRate = root.bit_rate.string.getOption(stream).map(_.toLong).getOrElse(0L),
             channels = root.channels.int.getOption(stream).getOrElse(0),
-            channelLayout = root.channel_layout.string.getOption(stream).get,
+            channelLayout = root.channel_layout.string.getOption(stream),
             tags = Tags(root.tags.as[Map[String, String]].getOption(stream).getOrElse(Map.empty))
           )
           if (audioInfo.nonEmpty) throw new RuntimeException("Multiple audio formats detected!")
