@@ -2,11 +2,10 @@ package org.matthicks.media4s.image
 
 import java.io._
 
-import com.outr.scribe.Logging
 import org.im4java.core.{CompositeCmd, ConvertCmd, IMOperation, IMOps, Info}
 import org.matthicks.media4s.Size
 
-object ImageUtil extends Logging {
+object ImageUtil {
   var iccProfiles = "/opt/icc"
 
   def info(file: File): ImageInfo = {

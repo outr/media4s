@@ -2,12 +2,11 @@ package org.matthicks.media4s.image
 
 import java.io.File
 
-import com.outr.scribe.Logging
 import org.matthicks.media4s.TranscodeFailedException
 
 import scala.sys.process._
 
-case class GIFSicleTranscoder(input: File, output: File, args: List[GIFSicleArgument] = Nil) extends Logging {
+case class GIFSicleTranscoder(input: File, output: File, args: List[GIFSicleArgument] = Nil) {
   lazy val command: List[String] = {
     "gifsicle" :: args.flatMap(_.args.map(_.toString)) ::: List(input.getAbsolutePath)
   }
@@ -33,7 +32,7 @@ case class GIFSicleTranscoder(input: File, output: File, args: List[GIFSicleArgu
   }
 
   def execute(): Unit = {
-    val result = (command #> output) ! ProcessLogger((line: String) => logger.info(line))
+    val result = (command #> output) ! ProcessLogger((line: String) => println(line))
     if (result != 0) {
       throw new TranscodeFailedException(s"Failed transcoding (${command.mkString(" ")}). Received result: $result.")
     }

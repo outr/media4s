@@ -2,7 +2,6 @@ package org.matthicks.media4s.video.transcode
 
 import java.io.File
 
-import com.outr.scribe.Logging
 import org.matthicks.media4s.TranscodeFailedException
 import org.matthicks.media4s.video.{Preset, VideoProfile, VideoUtil}
 import org.matthicks.media4s.video.codec.{AudioCodec, VideoCodec}
@@ -13,7 +12,7 @@ import scala.sys.process._
 
 import scala.concurrent.duration._
 
-class FFMPEGTranscoder private(overwrite: Boolean = true, args: List[FFMPEGArgument]) extends Logging {
+class FFMPEGTranscoder private(overwrite: Boolean = true, args: List[FFMPEGArgument]) {
   private val ProgressRegex = """frame=\s*(\d+) fps=\s*([0-9.]+) q=([-0-9.]+) (L?)size=\s*(\d+)kB time=(\d{2}):(\d{2}):(\d{2})[.](\d+) bitrate=\s*([0-9.]+)kbits/s.*""".r
 
   lazy val command: List[String] = {
@@ -141,7 +140,6 @@ class FFMPEGTranscoder private(overwrite: Boolean = true, args: List[FFMPEGArgum
     val info = VideoUtil.info(inputFile)
     val duration = args.find(_.args.head == "-t").map(_.args.tail.head.asInstanceOf[FFMPEGTime].seconds).getOrElse(0.0)
 
-    logger.debug(command.mkString(" "))
     val start = System.currentTimeMillis()
     var lastLine: String = null
     val log = (line: String) => line match {
@@ -159,7 +157,6 @@ class FFMPEGTranscoder private(overwrite: Boolean = true, args: List[FFMPEGArgum
         monitor.foreach(_.progress(percentage, frame.toInt, fps.toDouble, q.toDouble, math.round(size.toDouble * 1000), time, math.round(bitRate.toDouble * 1000), elapsed, finished))
       }
       case _ => {
-        logger.debug(line)
         monitor.foreach(_.log(line))
         lastLine = line
       }
@@ -168,7 +165,6 @@ class FFMPEGTranscoder private(overwrite: Boolean = true, args: List[FFMPEGArgum
       case Some(priority) => List("nice", s"--adjustment=$priority") ::: command ::: List(if (overwrite) "-y" else "-n")
       case None => command
     }
-    logger.debug(s"Command: ${niceCommand.mkString(" ")}")
     val result = niceCommand ! ProcessLogger(log)
     if (result != 0) {
       throw new TranscodeFailedException(s"Failed transcoding (${niceCommand.mkString(" ")}). Received result: $result. $lastLine")

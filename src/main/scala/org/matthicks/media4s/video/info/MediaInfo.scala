@@ -1,10 +1,7 @@
 package org.matthicks.media4s.video.info
 
-import com.outr.scribe.Logging
 import org.matthicks.media4s.video.MetaData
 import io.circe.optics.JsonPath._
-import cats.syntax.either._
-import io.circe._
 import io.circe.parser._
 
 /**
@@ -28,7 +25,7 @@ case class MediaInfo(duration: Double,
   }
 }
 
-object MediaInfo extends Logging {
+object MediaInfo {
   def apply(jsonString: String): MediaInfo = try {
     val json = parse(jsonString).getOrElse(throw new RuntimeException(s"Unable to parse: $jsonString"))
     var videoInfo: Option[VideoInfo] = None

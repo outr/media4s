@@ -2,9 +2,6 @@ package org.matthicks.media4s.video
 
 import java.io.File
 
-import com.outr.scribe.Logging
-import org.matthicks.media4s.video.codec.{AudioCodec, VideoCodec}
-import org.matthicks.media4s.video.filter.{CropFilter, ScaleFilter}
 import org.matthicks.media4s.video.info.MediaInfo
 import org.matthicks.media4s.video.transcode.FFMPEGTranscoder
 
@@ -13,14 +10,14 @@ import scala.sys.process._
 /**
  * @author Matt Hicks <matt@outr.com>
  */
-object VideoUtil extends Logging {
+object VideoUtil {
   /**
     * Gets the MediaInfo for the specified media file.
     *
     * @param file an audio or video file to get the information for.
     * @return MediaInfo
     */
-  def info(file: File): MediaInfo = {
+  def info(file: File, logger: String => Unit = println): MediaInfo = {
     assert(file.isFile, s"File was not found: ${file.getAbsolutePath}")
     val command = Seq(
       "ffprobe",
@@ -37,7 +34,7 @@ object VideoUtil extends Logging {
       b.append('\n')
       ()
     }
-    val result = command ! ProcessLogger(log, (err: String) => logger.error(err))
+    val result = command ! ProcessLogger(log, logger)
     if (result != 0) {
       throw new RuntimeException(s"Bad result while trying to execute ffprobe: $result. Command: ${command.mkString(" ")}. Verify ffmpeg is installed.")
     }
