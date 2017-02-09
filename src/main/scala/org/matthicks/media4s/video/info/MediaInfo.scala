@@ -27,7 +27,7 @@ case class MediaInfo(duration: Double,
 
 object MediaInfo {
   def apply(jsonString: String): MediaInfo = try {
-    val json = parse(jsonString).getOrElse(throw new RuntimeException(s"Unable to parse: $jsonString"))
+    val json = parse(jsonString).right.getOrElse(throw new RuntimeException(s"Unable to parse: $jsonString"))
     var videoInfo: Option[VideoInfo] = None
     var audioInfo: Option[AudioInfo] = None
     root.streams.each.json.getAll(json).foreach { stream =>
