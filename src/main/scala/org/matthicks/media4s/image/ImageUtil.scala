@@ -216,6 +216,10 @@ object ImageUtil {
     val altered = output.getAbsolutePath
     val op = new IMOperation
 
+    if (outputType == ImageType.GIF || outputType == ImageType.PNG) {
+      op.background("none")
+    }
+
     if (outputType == ImageType.JPEG) {
       if (strip) op.strip()
       if (gaussianBlur != 0.0) op.gaussianBlur(gaussianBlur)
