@@ -56,6 +56,7 @@ object MediaInfo {
           if (audioInfo.nonEmpty) throw new RuntimeException("Multiple audio formats detected!")
           audioInfo = Some(audio)
         }
+        case "data" => {}
         case codecType => throw new RuntimeException(s"Unsupported codec_type: $codecType.")
       }
     }
