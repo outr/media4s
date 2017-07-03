@@ -60,6 +60,7 @@ object ImageUtil {
     val original = input.getAbsolutePath
     val altered = output.getAbsolutePath
     val op = new IMOperation
+    op.autoOrient()
 
     if (altered.endsWith(".jpg")) {
       // Remove transparent background
@@ -113,6 +114,7 @@ object ImageUtil {
     val original = input.getAbsolutePath
     val altered = output.getAbsolutePath
     val op = new IMOperation
+    op.autoOrient()
 
     op.density(288)
     op.addImage(s"$original[0]")
@@ -130,6 +132,7 @@ object ImageUtil {
 
   def pngToJpg(input: File, output: File): Unit = {
     val op = new IMOperation
+    op.autoOrient()
     op.flatten()
     op.addImage(input.getAbsolutePath)
     op.addImage(output.getAbsolutePath)
@@ -149,6 +152,7 @@ object ImageUtil {
       else outputPath
 
     val op = new IMOperation
+    op.autoOrient()
 
     op.compose("over")
     op.gravity(gravity)
@@ -215,6 +219,7 @@ object ImageUtil {
     val original = input.getAbsolutePath
     val altered = output.getAbsolutePath
     val op = new IMOperation
+    op.autoOrient()
 
     if (outputType == ImageType.GIF || outputType == ImageType.PNG) {
       op.background("none")

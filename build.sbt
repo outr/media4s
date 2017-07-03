@@ -1,9 +1,8 @@
 name := "media4s"
 organization := "org.matthicks"
-version := "1.0.10"
-scalaVersion := "2.12.1"
-crossScalaVersions := List("2.12.1", "2.11.8")
-sbtVersion := "0.13.13"
+version := "1.0.11-SNAPSHOT"
+scalaVersion := "2.12.2"
+crossScalaVersions := List("2.12.2", "2.11.11")
 fork := true
 scalacOptions ++= Seq(
     "-deprecation",
@@ -26,7 +25,7 @@ libraryDependencies ++= Seq(
   "io.circe" %% "circe-generic",
   "io.circe" %% "circe-parser",
   "io.circe" %% "circe-optics"
-).map(_ % "0.7.0")
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "test"
+).map(_ % "0.8.0")
+libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.3" % "test"
 
 testOptions in Test += Tests.Argument("-oDF")
