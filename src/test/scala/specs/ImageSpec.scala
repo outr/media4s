@@ -2,7 +2,7 @@ package specs
 
 import java.io._
 
-import org.matthicks.media4s.image.{ImageInfo, ImageType, ImageUtil}
+import org.matthicks.media4s.image.{ImageInfo, ImageUtil}
 import org.scalatest.{Matchers, WordSpec}
 
 class ImageSpec extends WordSpec with Matchers {

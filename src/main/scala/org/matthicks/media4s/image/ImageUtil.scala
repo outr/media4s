@@ -152,7 +152,6 @@ object ImageUtil {
       else outputPath
 
     val op = new IMOperation
-    op.autoOrient()
 
     op.compose("over")
     op.gravity(gravity)
