@@ -1,8 +1,8 @@
 name := "media4s"
 organization := "org.matthicks"
-version := "1.0.11"
-scalaVersion := "2.12.2"
-crossScalaVersions := List("2.12.2", "2.11.11")
+version := "1.0.12-SNAPSHOT"
+scalaVersion := "2.12.3"
+crossScalaVersions := List("2.12.3", "2.11.11")
 fork := true
 scalacOptions ++= Seq(
     "-deprecation",
@@ -20,6 +20,7 @@ scalacOptions ++= Seq(
     "-Ywarn-value-discard")
 
 libraryDependencies += "org.im4java" % "im4java" % "1.4.0"
+libraryDependencies += "org.powerscala" %% "powerscala-io" % "2.0.5"
 libraryDependencies ++= Seq(
   "io.circe" %% "circe-core",
   "io.circe" %% "circe-generic",

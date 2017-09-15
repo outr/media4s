@@ -1,9 +1,11 @@
 package org.matthicks.media4s.image
 
 import java.io._
+import java.util.Base64
 
 import org.im4java.core.{CompositeCmd, ConvertCmd, IMOperation, IMOps, Info}
 import org.matthicks.media4s.Size
+import org.powerscala.io._
 
 object ImageUtil {
   var iccProfiles = "/opt/icc"
@@ -242,5 +244,23 @@ object ImageUtil {
 
     val cmd = new ConvertCmd
     cmd.run(op)
+  }
+
+  /**
+    * Takes a base64 encoded String and outputs it to the file specified as a proper binary representation.
+    *
+    * @param base64 the base64 encoded image
+    * @param file the binary file to output to
+    */
+  def saveBase64(base64: String, file: File): Unit = {
+    val index = base64.indexOf("base64,")
+    val encoded = if (index != -1) {
+      base64.substring(index + 7)
+    } else {
+      base64
+    }
+    val decoded = Base64.getDecoder.decode(encoded)
+    IO.stream(new ByteArrayInputStream(decoded), file)
+    ()
   }
 }
