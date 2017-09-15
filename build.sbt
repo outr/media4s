@@ -1,6 +1,6 @@
 name := "media4s"
 organization := "org.matthicks"
-version := "1.0.12-SNAPSHOT"
+version := "1.0.12"
 scalaVersion := "2.12.3"
 crossScalaVersions := List("2.12.3", "2.11.11")
 fork := true
