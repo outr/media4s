@@ -3,9 +3,10 @@ package specs
 import java.io._
 
 import org.matthicks.media4s.image.{ImageInfo, ImageUtil}
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.wordspec.AnyWordSpec
+import org.scalatest.Matchers
 
-class ImageSpec extends WordSpec with Matchers {
+class ImageSpec extends AnyWordSpec with Matchers {
   info("scaling up")
   import ImageUtil.scaleUp
   val baseInfo: ImageInfo = ImageInfo(0, 0, 0, null, None, None)

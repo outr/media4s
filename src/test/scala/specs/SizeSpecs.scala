@@ -1,9 +1,10 @@
 package specs
 
 import org.matthicks.media4s.Size
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.Matchers
+import org.scalatest.wordspec.AnyWordSpec
 
-class SizeSpecs extends WordSpec with Matchers {
+class SizeSpecs extends AnyWordSpec with Matchers {
   "Size" when {
     "cropping to aspect ratio" should {
       "calculate proper crop dimensions for aspect ratio (800x650)" in {

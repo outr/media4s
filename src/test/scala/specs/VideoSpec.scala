@@ -5,9 +5,11 @@ import java.io.File
 import org.matthicks.media4s.video.VideoUtil
 import org.matthicks.media4s.video.filter.{CropFilter, ScaleFilter}
 import org.matthicks.media4s.video.transcode.{FFMPEGTranscoder, TranscodeListener}
-import org.scalatest.{Matchers, WordSpec}
+import org.scalatest.Matchers
+import org.scalatest.wordspec.AnyWordSpec
+import Ordering.Double.TotalOrdering
 
-class VideoSpec extends WordSpec with Matchers {
+class VideoSpec extends AnyWordSpec with Matchers {
   "VideoUtil" should {
     val trailer480p = new File("content/video/trailer_480p.mov")
 
@@ -129,7 +131,7 @@ class VideoSpec extends WordSpec with Matchers {
       info.video.width should be(320)
       info.video.height should be(240)
       info.video.fps should be(25.0)
-      info.audio.bitRate should be(0)
+      info.audio.bitRate should be(384000L)
     }
 
     val samplemkv = new File("content/video/SampleVideo_320x240_1mb.mkv")

@@ -5,7 +5,7 @@ import java.util.Base64
 
 import org.im4java.core.{CompositeCmd, ConvertCmd, IMOperation, IMOps, Info}
 import org.matthicks.media4s.Size
-import org.powerscala.io._
+import io.youi.stream._
 
 object ImageUtil {
   var iccProfiles = "/opt/icc"

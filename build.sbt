@@ -1,8 +1,8 @@
 name := "media4s"
 organization := "org.matthicks"
-version := "1.0.12"
-scalaVersion := "2.12.3"
-crossScalaVersions := List("2.12.3", "2.11.11")
+version := "1.0.13-SNAPSHOT"
+scalaVersion := "2.13.0"
+crossScalaVersions := List("2.13.0", "2.12.8", "2.11.12")
 fork := true
 scalacOptions ++= Seq(
     "-deprecation",
@@ -14,19 +14,14 @@ scalacOptions ++= Seq(
     "-language:implicitConversions",
     "-unchecked",
     "-Xlint",
-    "-Yno-adapted-args",
     "-Ywarn-dead-code",
     "-Ywarn-numeric-widen",
     "-Ywarn-value-discard")
-
-libraryDependencies += "org.im4java" % "im4java" % "1.4.0"
-libraryDependencies += "org.powerscala" %% "powerscala-io" % "2.0.5"
-libraryDependencies ++= Seq(
-  "io.circe" %% "circe-core",
-  "io.circe" %% "circe-generic",
-  "io.circe" %% "circe-parser",
-  "io.circe" %% "circe-optics"
-).map(_ % "0.8.0")
-libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.3" % "test"
-
 testOptions in Test += Tests.Argument("-oDF")
+
+libraryDependencies ++= List(
+    "org.im4java" % "im4java" % "1.4.0",
+    "io.youi" %% "youi-core" % "0.11.13",
+    "org.scala-lang.modules" %% "scala-xml" % "1.2.0",
+    "org.scalatest" %% "scalatest" % "3.1.0-SNAP13" % "test"
+)
