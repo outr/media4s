@@ -42,8 +42,7 @@ case class MediaInfo(streams: List[MediaStream], format: MediaFormat) {
   def hasAudio: Boolean = audios.nonEmpty
 
   override def toString: String = {
-//    s"MediaInfo(duration: $duration, start: $start, video: $video, audio: $audio, frames: $frames, meta: $meta)"
-    "STRING"
+    s"MediaInfo(duration: $duration, start: $start, video: $video, audio: $audio, frames: $frames)"
   }
 }
 
