@@ -7,7 +7,7 @@ import org.matthicks.media4s.video.filter.{CropFilter, ScaleFilter}
 import org.matthicks.media4s.video.transcode.{FFMPEGTranscoder, TranscodeListener}
 import org.scalatest.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import Ordering.Double.TotalOrdering
+//import Ordering.Double.TotalOrdering
 
 class VideoSpec extends AnyWordSpec with Matchers {
   "VideoUtil" should {
