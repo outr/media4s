@@ -2,7 +2,8 @@ package specs
 
 import java.io._
 
-import org.matthicks.media4s.image.{ImageInfo, ImageUtil}
+import io.youi.Color
+import org.matthicks.media4s.image.{ImageInfo, ImageUtil, SVGTools}
 import org.scalatest.wordspec.AnyWordSpec
 import org.scalatest.Matchers
 
@@ -61,5 +62,19 @@ class ImageSpec extends AnyWordSpec with Matchers {
     val output = new File("/tmp/resized2.jpg")
     ImageUtil.generateResized(input, output, Some(50))
     output.exists() should equal (true)
+  }
+  "resize SVG" in {
+    val input = new File("content/svg/dolphin.svg")
+    val output = new File("/tmp/resized3.png")
+    ImageUtil.generateResized(input, output, width = Some(100))
+    output.exists() should equal(true)
+    val info = ImageUtil.info(output)
+    info.width should be(100)
+    info.height should be(100)
+  }
+  "colorize an SVG" in {
+    val input = new File("content/svg/crab.svg")
+    val output = new File("blue-crab.svg")
+    SVGTools.colorize(input, Color.Blue, output)
   }
 }

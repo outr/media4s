@@ -64,6 +64,7 @@ object ImageUtil {
     val op = new IMOperation
     op.autoOrient()
 
+    op.background("none")
     if (altered.endsWith(".jpg")) {
       // Remove transparent background
       op.flatten()
