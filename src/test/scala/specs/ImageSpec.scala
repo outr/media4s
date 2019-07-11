@@ -73,8 +73,8 @@ class ImageSpec extends AnyWordSpec with Matchers {
     info.height should be(100)
   }
   "colorize an SVG" in {
-    val input = new File("content/svg/crab.svg")
-    val output = new File("blue-crab.svg")
+    val input = new File("content/svg/sheep.svg")
+    val output = new File("/tmp/blue-sheep.svg")
     SVGTools.colorize(input, Color.Blue, output)
   }
 }

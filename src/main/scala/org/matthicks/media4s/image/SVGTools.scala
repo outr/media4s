@@ -19,7 +19,7 @@ object SVGTools {
           if (fill != "none") {
             e = e % Attribute(null, "fill", color.toHex, Null)
           }
-          if (fill.isEmpty || stroke.nonEmpty) {
+          if (stroke.nonEmpty) {
             e = e % Attribute(null, "stroke", color.toHex, Null)
           }
           scribe.info(s"Path rewrite: $fill / $stroke")
