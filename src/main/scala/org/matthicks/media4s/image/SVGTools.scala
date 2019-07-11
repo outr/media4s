@@ -22,7 +22,6 @@ object SVGTools {
           if (stroke.nonEmpty) {
             e = e % Attribute(null, "stroke", color.toHex, Null)
           }
-          scribe.info(s"Path rewrite: $fill / $stroke")
           e
         }
         case _ => n
