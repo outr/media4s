@@ -264,4 +264,6 @@ object ImageUtil {
     IO.stream(new ByteArrayInputStream(decoded), file)
     ()
   }
+
+  // TODO: create dominantColors method: convert imagecontent.jpg +dither -colors 5 -define histogram:unique-colors=true -format "%c" histogram:info:
 }
