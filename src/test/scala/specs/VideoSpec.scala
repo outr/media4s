@@ -13,6 +13,8 @@ class VideoSpec extends AnyWordSpec with Matchers {
   "VideoUtil" should {
     val trailer480p = new File("content/video/trailer_480p.mov")
 
+    val testVideoWithDataStream = new File("content/video/test_3.mov")
+
     "gather the correct information for trailer_480p.mov" in {
       val info = VideoUtil.info(trailer480p)
       info.duration should be(32.995)
@@ -21,8 +23,17 @@ class VideoSpec extends AnyWordSpec with Matchers {
       info.video.width should be(853)
       info.video.height should be(480)
       info.video.fps should be(25.0)
-      info.audio.bitRate should be(428605)
+      info.audio.get.bitRate should be(428605)
     }
+    "gather the correct information and ignore data codec_type for test_3.mov" in {
+      val info = VideoUtil.info(testVideoWithDataStream)
+      info.video.width should be(1920)
+      info.video.height should be(1080)
+      info.video.fps should be(60000)
+      info.audio.isEmpty should be(true)
+      println(info)
+    }
+
     "transcode quickly to an MP4 video" in {
       val output = File.createTempFile("test", ".mp4")
       var previous: Double = 0.0
@@ -131,7 +142,7 @@ class VideoSpec extends AnyWordSpec with Matchers {
       info.video.width should be(320)
       info.video.height should be(240)
       info.video.fps should be(25.0)
-      info.audio.bitRate should be(384000L)
+      info.audio.get.bitRate should be(384000L)
     }
 
     val samplemkv = new File("content/video/SampleVideo_320x240_1mb.mkv")
@@ -144,7 +155,7 @@ class VideoSpec extends AnyWordSpec with Matchers {
       info.video.width should be(320)
       info.video.height should be(240)
       info.video.fps should be(25.0)
-      info.audio.bitRate should be(0)
+      info.audio.get.bitRate should be(0)
     }
   }
 }
