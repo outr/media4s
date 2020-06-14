@@ -18,5 +18,5 @@ object ImageType {
 
   val values = Vector(JPEG, PNG, GIF, SVG, TIFF, BMP, TGA)
 
-  def fromExtension(ext: String) = values.find(it => it.extensions.contains(ext.toLowerCase))
+  def fromExtension(ext: String): Option[ImageType] = values.find(it => it.extensions.contains(ext.toLowerCase))
 }

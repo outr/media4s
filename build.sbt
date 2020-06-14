@@ -25,7 +25,6 @@ libraryDependencies ++= List(
     "org.scala-lang.modules" %% "scala-xml" % "1.3.0",
     "org.scalatest" %% "scalatest" % "3.1.0-SNAP13" % "test"
 )
-
 publishTo in ThisBuild := sonatypePublishTo.value
 sonatypeProfileName in ThisBuild := "org.matthicks"
 publishMavenStyle in ThisBuild := true

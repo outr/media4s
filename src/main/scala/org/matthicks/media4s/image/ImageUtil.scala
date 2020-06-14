@@ -6,11 +6,17 @@ import java.util.Base64
 import org.im4java.core.{CompositeCmd, ConvertCmd, IMOperation, IMOps, Info}
 import org.matthicks.media4s.Size
 import io.youi.stream._
+import profig.JsonUtil
+
+import scala.sys.process._
+import scala.util.Try
 
 object ImageUtil {
   var iccProfiles = "/opt/icc"
 
-  def info(file: File): ImageInfo = {
+  def info(file: File): ImageInfo = Try(convertInfo(file)).toOption.getOrElse(im4Info(file))
+
+  private def im4Info(file: File): ImageInfo = {
     val filename = file.getAbsolutePath
     val info = new Info(filename)
     val extension = filename.substring(filename.lastIndexOf('.') + 1)
@@ -23,6 +29,36 @@ object ImageUtil {
       format = info.getImageFormat(0),
       imageType = imageType,
       colorSpace = Option(info.getProperty("Colorspace"))
+    )
+  }
+
+  private def convertInfo(file: File): ImageInfo = {
+    val command = Seq(
+      "convert",
+      file.getCanonicalPath,
+      "json:"
+    )
+    val b = new StringBuilder
+    val log: String => Unit = (line: String) => {
+      b.append(line)
+      b.append('\n')
+      ()
+    }
+    val result = command ! ProcessLogger(log, println)
+    if (result != 0) {
+      throw new RuntimeException(s"Bad result while trying to execute convert: $result. Command: ${command.mkString(" ")}. Verify ImageMagick is installed.")
+    }
+    val image = JsonUtil
+      .fromJsonString[List[ConvertResult]](b.toString())
+      .head
+      .image
+    ImageInfo(
+      width = image.geometry.width,
+      height = image.geometry.height,
+      depth = image.depth,
+      format = image.format,
+      imageType = ImageType.fromExtension(image.format),
+      colorSpace = image.colorspace
     )
   }
 
@@ -266,4 +302,17 @@ object ImageUtil {
   }
 
   // TODO: create dominantColors method: convert imagecontent.jpg +dither -colors 5 -define histogram:unique-colors=true -format "%c" histogram:info:
+
+  case class ConvertResult(image: ConvertImage)
+  case class ConvertImage(name: Option[String],
+                          baseName: String,
+                          format: String,
+                          formatDescription: String,
+                          mimeType: Option[String],
+                          geometry: ConvertImageGeometry,
+                          colorspace: Option[String],
+                          depth: Int,
+                          baseDepth: Int,
+                          pixels: Long)
+  case class ConvertImageGeometry(width: Int, height: Int, x: Int, y: Int)
 }
