@@ -1,8 +1,8 @@
 name := "media4s"
 organization := "org.matthicks"
-version := "1.0.15"
-scalaVersion := "2.13.2"
-crossScalaVersions := List("2.13.2", "2.12.11")
+version := "1.0.16"
+scalaVersion := "2.13.4"
+crossScalaVersions := List("2.13.4", "2.12.11")
 fork := true
 scalacOptions ++= Seq(
     "-deprecation",
@@ -21,7 +21,7 @@ testOptions in Test += Tests.Argument("-oDF")
 
 libraryDependencies ++= List(
     "org.im4java" % "im4java" % "1.4.0",
-    "io.youi" %% "youi-core" % "0.13.15",
+    "io.youi" %% "youi-core" % "0.13.18",
     "org.scala-lang.modules" %% "scala-xml" % "1.3.0",
     "org.scalatest" %% "scalatest" % "3.1.0-SNAP13" % "test"
 )
