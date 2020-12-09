@@ -162,7 +162,7 @@ class FFMPEGTranscoder private(overwrite: Boolean = true, args: List[FFMPEGArgum
       }
     }
     val niceCommand = nicePriority match {
-      case Some(priority) => List("nice", s"--adjustment=$priority") ::: command ::: List(if (overwrite) "-y" else "-n")
+      case Some(priority) => List("nice", s"-n $priority") ::: command ::: List(if (overwrite) "-y" else "-n")
       case None => command
     }
     val result = niceCommand ! ProcessLogger(log)
