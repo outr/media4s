@@ -1,8 +1,6 @@
 package org.matthicks.media4s.video.info
 
-import io.circe.Json
-import io.circe.parser.parse
-import profig.JsonUtil
+import fabric.rw.RW
 
 /**
  * @author Matt Hicks <matt@outr.com>
@@ -17,7 +15,7 @@ case class MediaInfo(streams: List[MediaStream], format: MediaFormat) {
       val frameRate = s.r_frame_rate
       val fps = frameRate.substring(0, frameRate.indexOf('/')).toDouble
       VideoInfo(
-        codec = s.codec_name,
+        codec = s.codec_name.getOrElse(""),
         width = s.width,
         height = s.height,
         fps = fps,
@@ -28,7 +26,7 @@ case class MediaInfo(streams: List[MediaStream], format: MediaFormat) {
   lazy val audios: List[AudioInfo] = streams.collect {
     case s if s.codec_type == "audio" => {
       AudioInfo(
-        codec = s.codec_name,
+        codec = s.codec_name.getOrElse(""),
         bitRate = s.bit_rate,
         channels = s.channels,
         channelLayout = Option(s.channel_layout),
@@ -50,15 +48,5 @@ case class MediaInfo(streams: List[MediaStream], format: MediaFormat) {
 }
 
 object MediaInfo {
-  def apply(jsonString: String): MediaInfo = try {
-    //filter anything out other than video and audio codec_type
-    val filteredJsonString = parse(jsonString).map( _.hcursor.downField("streams").withFocus(codecTypeFilter).top.get).getOrElse("{}").toString
-    JsonUtil.fromJsonString[MediaInfo](filteredJsonString)
-  } catch {
-    case t: Throwable => throw new RuntimeException(s"Failed to parse: $jsonString", t)
-  }
-
-  def codecTypeFilter(j:Json): Json = j.withArray { x =>
-    Json.fromValues(x.filter(_.hcursor.downField("codec_type").as[String].map(t => (t == "video" || t == "audio") ).getOrElse(false)))
-  }
+  implicit val rw: RW[MediaInfo] = RW.gen
 }

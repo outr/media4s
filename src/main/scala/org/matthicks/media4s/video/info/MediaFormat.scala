@@ -1,5 +1,7 @@
 package org.matthicks.media4s.video.info
 
+import fabric.rw.RW
+
 case class MediaFormat(filename: String,
                        start_time: Double = 0.0,
                        nb_streams: Int,
@@ -11,3 +13,7 @@ case class MediaFormat(filename: String,
                        bit_rate: Long,
                        probe_score: Int,
                        tags: Map[String, String])
+
+object MediaFormat {
+  implicit val rw: RW[MediaFormat] = RW.gen
+}

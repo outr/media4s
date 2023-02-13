@@ -1,7 +1,7 @@
 package specs
 
 import org.matthicks.media4s.Size
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 
 class SizeSpecs extends AnyWordSpec with Matchers {

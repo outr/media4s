@@ -1,11 +1,9 @@
 package specs
 
 import java.io._
-
-import io.youi.Color
 import org.matthicks.media4s.image.{ImageInfo, ImageUtil, SVGTools}
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
-import org.scalatest.Matchers
 
 class ImageSpec extends AnyWordSpec with Matchers {
   info("scaling up")
@@ -75,6 +73,6 @@ class ImageSpec extends AnyWordSpec with Matchers {
   "colorize an SVG" in {
     val input = new File("content/svg/sheep.svg")
     val output = new File("/tmp/blue-sheep.svg")
-    SVGTools.colorize(input, Color.Blue, output)
+    SVGTools.colorize(input, "#ff0000", output)
   }
 }

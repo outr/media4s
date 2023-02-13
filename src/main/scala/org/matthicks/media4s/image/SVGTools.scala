@@ -2,13 +2,11 @@ package org.matthicks.media4s.image
 
 import java.io.File
 
-import io.youi.Color
-
 import scala.xml.transform.{RewriteRule, RuleTransformer}
 import scala.xml.{Attribute, Elem, Node, Null, XML}
 
 object SVGTools {
-  def colorize(input: File, color: Color, output: File): Unit = {
+  def colorize(input: File, colorHex: String, output: File): Unit = {
     val elem = load(input)
     val rule = new RewriteRule {
       override def transform(n: Node): collection.Seq[Node] = n match {
@@ -17,10 +15,10 @@ object SVGTools {
           val fill = e \@ "fill"
           val stroke = e \@ "stroke"
           if (fill != "none") {
-            e = e % Attribute(null, "fill", color.toHex, Null)
+            e = e % Attribute(null, "fill", colorHex, Null)
           }
           if (stroke.nonEmpty) {
-            e = e % Attribute(null, "stroke", color.toHex, Null)
+            e = e % Attribute(null, "stroke", colorHex, Null)
           }
           e
         }

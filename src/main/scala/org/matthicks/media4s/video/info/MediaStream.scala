@@ -1,8 +1,10 @@
 package org.matthicks.media4s.video.info
 
+import fabric.rw.RW
+
 case class MediaStream(index: Int,
-                       codec_name: String,
-                       codec_long_name: String,
+                       codec_name: Option[String],
+                       codec_long_name: Option[String],
                        profile: String = "",
                        codec_type: String,
                        codec_time_base: Option[String],
@@ -35,3 +37,7 @@ case class MediaStream(index: Int,
                        bit_rate: Long = 0L,
                        bits_per_sample: Int = 0,
                        bits_per_raw_sample: Int = 0)
+
+object MediaStream {
+  implicit val rw: RW[MediaStream] = RW.gen
+}

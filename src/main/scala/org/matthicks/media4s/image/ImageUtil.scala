@@ -1,12 +1,14 @@
 package org.matthicks.media4s.image
 
+import cats.effect.unsafe.implicits.global
+import fabric.io.JsonParser
+import fabric.rw.{Asable, RW}
+
 import java.io._
 import java.util.Base64
-
 import org.im4java.core.{CompositeCmd, ConvertCmd, IMOperation, IMOps, Info}
 import org.matthicks.media4s.Size
-import io.youi.stream._
-import profig.JsonUtil
+import spice.streamer._
 
 import scala.sys.process._
 import scala.util.Try
@@ -48,10 +50,8 @@ object ImageUtil {
     if (result != 0) {
       throw new RuntimeException(s"Bad result while trying to execute convert: $result. Command: ${command.mkString(" ")}. Verify ImageMagick is installed.")
     }
-    val image = JsonUtil
-      .fromJsonString[List[ConvertResult]](b.toString())
-      .head
-      .image
+    val json = JsonParser(b.toString())
+    val image = json.as[List[ConvertResult]].head.image
     ImageInfo(
       width = image.geometry.width,
       height = image.geometry.height,
@@ -297,13 +297,16 @@ object ImageUtil {
       base64
     }
     val decoded = Base64.getDecoder.decode(encoded)
-    IO.stream(new ByteArrayInputStream(decoded), file)
+    Streamer(new ByteArrayInputStream(decoded), file).unsafeRunSync()
     ()
   }
 
   // TODO: create dominantColors method: convert imagecontent.jpg +dither -colors 5 -define histogram:unique-colors=true -format "%c" histogram:info:
 
   case class ConvertResult(image: ConvertImage)
+  object ConvertResult {
+    implicit val rw: RW[ConvertResult] = RW.gen
+  }
   case class ConvertImage(name: Option[String],
                           baseName: String,
                           format: String,
@@ -314,5 +317,11 @@ object ImageUtil {
                           depth: Int,
                           baseDepth: Int,
                           pixels: Long)
+  object ConvertImage {
+    implicit val rw: RW[ConvertImage] = RW.gen
+  }
   case class ConvertImageGeometry(width: Int, height: Int, x: Int, y: Int)
+  object ConvertImageGeometry {
+    implicit val rw: RW[ConvertImageGeometry] = RW.gen
+  }
 }

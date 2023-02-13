@@ -1,7 +1,9 @@
 package org.matthicks.media4s.video
 
-import java.io.File
+import fabric.io._
+import fabric.rw.Asable
 
+import java.io.File
 import org.matthicks.media4s.video.info.MediaInfo
 import org.matthicks.media4s.video.transcode.FFMPEGTranscoder
 
@@ -38,7 +40,7 @@ object VideoUtil {
     if (result != 0) {
       throw new RuntimeException(s"Bad result while trying to execute ffprobe: $result. Command: ${command.mkString(" ")}. Verify ffmpeg is installed.")
     }
-    MediaInfo(b.toString())
+    JsonParser(b.toString()).as[MediaInfo]
   }
 
   /**

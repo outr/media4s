@@ -1,11 +1,10 @@
 package specs
 
 import java.io.File
-
 import org.matthicks.media4s.video.VideoUtil
 import org.matthicks.media4s.video.filter.{CropFilter, ScaleFilter}
 import org.matthicks.media4s.video.transcode.{FFMPEGTranscoder, TranscodeListener}
-import org.scalatest.Matchers
+import org.scalatest.matchers.should.Matchers
 import org.scalatest.wordspec.AnyWordSpec
 //import Ordering.Double.TotalOrdering
 

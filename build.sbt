@@ -1,8 +1,8 @@
 name := "media4s"
 organization := "org.matthicks"
-version := "1.0.17"
-scalaVersion := "2.13.4"
-crossScalaVersions := List("2.13.4", "2.12.11")
+version := "1.0.18-SNAPSHOT"
+scalaVersion := "2.13.10"
+crossScalaVersions := List("2.13.10", "2.12.12")
 fork := true
 scalacOptions ++= Seq(
     "-deprecation",
@@ -17,26 +17,26 @@ scalacOptions ++= Seq(
     "-Ywarn-dead-code",
     "-Ywarn-numeric-widen",
     "-Ywarn-value-discard")
-testOptions in Test += Tests.Argument("-oDF")
+Test / testOptions += Tests.Argument("-oDF")
 
 libraryDependencies ++= List(
     "org.im4java" % "im4java" % "1.4.0",
-    "io.youi" %% "youi-core" % "0.13.19",
-    "org.scala-lang.modules" %% "scala-xml" % "1.3.0",
-    "org.scalatest" %% "scalatest" % "3.1.0-SNAP13" % "test"
+    "com.outr" %% "spice-core" % "0.0.16",
+    "org.scala-lang.modules" %% "scala-xml" % "2.1.0",
+    "org.scalatest" %% "scalatest" % "3.2.15" % "test"
 )
-publishTo in ThisBuild := sonatypePublishTo.value
-sonatypeProfileName in ThisBuild := "org.matthicks"
-publishMavenStyle in ThisBuild := true
-licenses in ThisBuild := Seq("MIT" -> url("https://github.com/outr/media4s/blob/master/LICENSE"))
-sonatypeProjectHosting in ThisBuild := Some(xerial.sbt.Sonatype.GitHubHosting("outr", "media4s", "matt@outr.com"))
-homepage in ThisBuild := Some(url("https://github.com/outr/media4s"))
-scmInfo in ThisBuild := Some(
+ThisBuild / publishTo := sonatypePublishTo.value
+ThisBuild / sonatypeProfileName := "org.matthicks"
+publishMavenStyle := true
+ThisBuild / licenses := Seq("MIT" -> url("https://github.com/outr/media4s/blob/master/LICENSE"))
+ThisBuild / sonatypeProjectHosting := Some(xerial.sbt.Sonatype.GitHubHosting("outr", "media4s", "matt@outr.com"))
+ThisBuild / homepage := Some(url("https://github.com/outr/media4s"))
+ThisBuild / scmInfo := Some(
     ScmInfo(
         url("https://github.com/outr/media4s"),
         "scm:git@github.com:outr/media4s.git"
     )
 )
-developers in ThisBuild := List(
+ThisBuild / developers := List(
     Developer(id="darkfrog", name="Matt Hicks", email="matt@matthicks.com", url=url("http://matthicks.com"))
 )
