@@ -142,24 +142,27 @@ class FFMPEGTranscoder private(overwrite: Boolean = true, args: List[FFMPEGArgum
 
     val start = System.currentTimeMillis()
     var lastLine: String = null
-    val log = (line: String) => line match {
-      case ProgressRegex(frame, fps, q, last, size, hours, minutes, seconds, millis, bitRate) => {
-        val timeProcessed = seconds.toDouble + (minutes.toDouble * 60.0) + (hours.toDouble * 60.0 * 60.0)
-        val percentage = if (duration != 0.0) {
-          timeProcessed / duration
-        } else {
-          timeProcessed / info.duration
-        }
+    val log = (line: String) => try {
+      line match {
+        case ProgressRegex(frame, fps, q, last, size, hours, minutes, seconds, millis, bitRate) =>
+          val timeProcessed = seconds.toDouble + (minutes.toDouble * 60.0) + (hours.toDouble * 60.0 * 60.0)
+          val percentage = if (duration != 0.0) {
+            timeProcessed / duration
+          } else {
+            timeProcessed / info.duration
+          }
 
-        val time = hours.toInt.hours.toSeconds + minutes.toInt.minute.toSeconds + seconds.toInt + (millis.toDouble / 100.0)
-        val elapsed = (System.currentTimeMillis() - start) / 1000.0
-        val finished = last == "L"
-        monitor.foreach(_.progress(percentage, frame.toInt, fps.toDouble, q.toDouble, math.round(size.toDouble * 1000), time, math.round(bitRate.toDouble * 1000), elapsed, finished))
+          val time = hours.toInt.hours.toSeconds + minutes.toInt.minute.toSeconds + seconds.toInt + (millis.toDouble / 100.0)
+          val elapsed = (System.currentTimeMillis() - start) / 1000.0
+          val finished = last == "L"
+          monitor.foreach(_.progress(percentage, frame.toInt, fps.toDouble, q.toDouble, math.round(size.toDouble * 1000), time, math.round(bitRate.toDouble * 1000), elapsed, finished))
+        case s if s.trim.startsWith("frame=") => scribe.warn(s"Failed to parse: $s")
+        case _ =>
+          monitor.foreach(_.log(line))
+          lastLine = line
       }
-      case _ => {
-        monitor.foreach(_.log(line))
-        lastLine = line
-      }
+    } catch {
+      case t: Throwable => scribe.error(s"Error parsing: $line", t)
     }
     val niceCommand = nicePriority match {
       case Some(priority) => List("nice", s"-n $priority") ::: command ::: List(if (overwrite) "-y" else "-n")

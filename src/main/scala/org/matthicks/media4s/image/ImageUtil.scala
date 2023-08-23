@@ -2,7 +2,7 @@ package org.matthicks.media4s.image
 
 import cats.effect.unsafe.implicits.global
 import fabric.io.JsonParser
-import fabric.rw.{Asable, RW}
+import fabric.rw._
 
 import java.io._
 import java.util.Base64
@@ -24,6 +24,7 @@ object ImageUtil {
     val extension = filename.substring(filename.lastIndexOf('.') + 1)
     val imageType = ImageType.fromExtension(extension)
 
+    scribe.info(s"Scene Count: ${Try(info.getImageWidth)}, ${Try(info.getImageHeight)}")
     ImageInfo(
       width = info.getImageWidth(0),
       height = info.getImageHeight(0),
@@ -308,7 +309,7 @@ object ImageUtil {
     implicit val rw: RW[ConvertResult] = RW.gen
   }
   case class ConvertImage(name: Option[String],
-                          baseName: String,
+                          baseName: Option[String],
                           format: String,
                           formatDescription: String,
                           mimeType: Option[String],

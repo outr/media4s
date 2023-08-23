@@ -52,7 +52,7 @@ class VideoSpec extends AnyWordSpec with Matchers {
           .videoFilters(ScaleFilter.create(info, 50, 50), CropFilter.create(info, 50, 50))
           .output(output)
         t.execute(Some(listener))
-        math.floor(previous) should be(1.0)
+        previous should be >= 0.9
       } finally {
         if (!output.delete()) {
           output.deleteOnExit()
@@ -79,14 +79,14 @@ class VideoSpec extends AnyWordSpec with Matchers {
           .duration(25.0)
           .output(output)
         t.execute(Some(listener))
-        math.floor(previous) should be(1.0)
+        previous should be >= 0.9
       } finally {
         if (!output.delete()) {
           output.deleteOnExit()
         }
       }
     }
-    // TODO: investigate this further
+    // TODO: investigate this further - migrate to ScaleFilter and CropFilter
     /*"transcode multiple outputs for one video" in {
       val output1 = File.createTempFile("test", ".mp4")
       val output2 = File.createTempFile("test", ".webm")

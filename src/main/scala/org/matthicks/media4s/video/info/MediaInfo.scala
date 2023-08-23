@@ -1,6 +1,6 @@
 package org.matthicks.media4s.video.info
 
-import fabric.rw.RW
+import fabric.rw._
 
 /**
  * @author Matt Hicks <matt@outr.com>

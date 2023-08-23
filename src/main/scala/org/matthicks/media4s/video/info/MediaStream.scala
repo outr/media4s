@@ -1,6 +1,6 @@
 package org.matthicks.media4s.video.info
 
-import fabric.rw.RW
+import fabric.rw._
 
 case class MediaStream(index: Int,
                        codec_name: Option[String],
