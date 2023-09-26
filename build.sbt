@@ -1,8 +1,8 @@
 name := "media4s"
 organization := "com.outr"
 version := "1.0.20"
-scalaVersion := "2.13.11"
-crossScalaVersions := List("2.13.11", "3.3.0")
+scalaVersion := "2.13.12"
+crossScalaVersions := List("2.13.12", "3.3.1")
 fork := true
 scalacOptions ++= Seq(
     "-deprecation",
@@ -31,7 +31,7 @@ libraryDependencies ++= List(
     "org.im4java" % "im4java" % "1.4.0",
     "com.outr" %% "spice-core" % "0.1.10",
     "org.scala-lang.modules" %% "scala-xml" % "2.2.0",
-    "org.scalatest" %% "scalatest" % "3.2.16" % "test"
+    "org.scalatest" %% "scalatest" % "3.2.17" % "test"
 )
 ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 ThisBuild / sonatypeRepository := "https://s01.oss.sonatype.org/service/local"

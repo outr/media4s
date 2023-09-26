@@ -12,7 +12,7 @@ case class MediaFormat(filename: String,
                        size: Long,
                        bit_rate: Long,
                        probe_score: Int,
-                       tags: Map[String, String])
+                       tags: Map[String, String] = Map.empty)
 
 object MediaFormat {
   implicit val rw: RW[MediaFormat] = RW.gen
