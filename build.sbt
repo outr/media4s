@@ -1,6 +1,6 @@
 name := "media4s"
 organization := "com.outr"
-version := "1.0.21"
+version := "1.0.22"
 scalaVersion := "2.13.12"
 crossScalaVersions := List("2.13.12", "3.3.1")
 fork := true
@@ -29,7 +29,7 @@ Test / testOptions += Tests.Argument("-oDF")
 
 libraryDependencies ++= List(
     "org.im4java" % "im4java" % "1.4.0",
-    "com.outr" %% "spice-core" % "0.1.10",
+    "com.outr" %% "spice-core" % "0.4.1",
     "org.scala-lang.modules" %% "scala-xml" % "2.2.0",
     "org.scalatest" %% "scalatest" % "3.2.17" % "test"
 )
