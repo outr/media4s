@@ -13,7 +13,7 @@ import scala.sys.process._
 import scala.concurrent.duration._
 
 class FFMPEGTranscoder private(overwrite: Boolean = true, args: List[FFMPEGArgument]) {
-  private val ProgressRegex = """frame=\s*(\d+) fps=\s*([0-9.]+) q=([-0-9.]+) (L?)size=\s*(\d+)kB time=(\d{2}):(\d{2}):(\d{2})[.](\d+) bitrate=\s*([0-9.]+)kbits/s.*""".r
+  private val ProgressRegex = """frame=\s*(\d+) fps=\s*([0-9.]+) q=([-0-9.]+) (L?)size=\s*(\d+)(?:kB|KiB) time=(\d{2}):(\d{2}):(\d{2})[.](\d+) bitrate=\s*([0-9.]+)kbits/s.*""".r
 
   lazy val command: List[String] = {
     "ffmpeg" :: args.flatMap(_.args.map(_.toString))

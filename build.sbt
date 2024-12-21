@@ -1,8 +1,8 @@
 name := "media4s"
 organization := "com.outr"
-version := "1.0.22"
-scalaVersion := "2.13.12"
-crossScalaVersions := List("2.13.12", "3.3.1")
+version := "1.0.23"
+scalaVersion := "2.13.15"
+crossScalaVersions := List("2.13.15", "3.3.4")
 fork := true
 scalacOptions ++= Seq(
     "-deprecation",
@@ -29,9 +29,9 @@ Test / testOptions += Tests.Argument("-oDF")
 
 libraryDependencies ++= List(
     "org.im4java" % "im4java" % "1.4.0",
-    "com.outr" %% "spice-core" % "0.4.1",
+    "com.outr" %% "spice-core" % "0.7.2",
     "org.scala-lang.modules" %% "scala-xml" % "2.2.0",
-    "org.scalatest" %% "scalatest" % "3.2.17" % "test"
+    "org.scalatest" %% "scalatest" % "3.2.19" % "test"
 )
 ThisBuild / sonatypeCredentialHost := "s01.oss.sonatype.org"
 ThisBuild / sonatypeRepository := "https://s01.oss.sonatype.org/service/local"

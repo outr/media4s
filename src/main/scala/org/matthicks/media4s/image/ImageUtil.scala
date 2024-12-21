@@ -1,6 +1,5 @@
 package org.matthicks.media4s.image
 
-import cats.effect.unsafe.implicits.global
 import fabric.io.JsonParser
 import fabric.rw._
 
@@ -298,7 +297,7 @@ object ImageUtil {
       base64
     }
     val decoded = Base64.getDecoder.decode(encoded)
-    Streamer(new ByteArrayInputStream(decoded), file).unsafeRunSync()
+    Streamer(new ByteArrayInputStream(decoded), file).sync()
     ()
   }
 
